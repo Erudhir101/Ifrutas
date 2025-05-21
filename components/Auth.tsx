@@ -9,8 +9,12 @@ import {
 } from "react-native";
 import { supabase } from "../lib/supabase";
 import { useTheme } from "../hooks/useTheme";
+import { useNavigation, Link } from "expo-router";
+import { Button } from "@react-navigation/elements";
 
 export default function Auth() {
+  const navigation = useNavigation();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -75,6 +79,11 @@ export default function Auth() {
           />
         </View>
       </View>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <Text>Home Screen</Text>
+        <Link href="/two">Go to Details</Link>
+      </View>
+
       <View style={[styles.buttons]}>
         <TouchableOpacity
           style={[styles.button, { backgroundColor: colors.primary }]}
