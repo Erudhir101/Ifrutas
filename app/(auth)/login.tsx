@@ -15,7 +15,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -25,8 +25,19 @@ export default function LoginScreen() {
 
     setIsLoading(true);
     try {
-      await signIn(email, password);
-      // Navigation will be handled automatically by the index page
+      const { data } = await signIn(email, password);
+      console.error(data);
+      switch (user?.user_type) {
+        case "comprador":
+          router.replace("/(Comprador)/homeComprador");
+          break;
+        case "vendedor":
+          router.replace("/(Vendedor)/homeVendedor");
+          break;
+        case "entregador":
+          router.replace("/(Entregador)/homeEntregador");
+          break;
+      }
     } catch (error: any) {
       Alert.alert("Falha no Login", error.message || "Credenciais Inválidas");
     } finally {

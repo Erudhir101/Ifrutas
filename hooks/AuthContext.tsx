@@ -175,7 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error: error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
-        password,
+        password: password,
       });
 
       if (error) throw error;
