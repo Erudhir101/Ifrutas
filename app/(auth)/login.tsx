@@ -25,8 +25,7 @@ export default function LoginScreen() {
 
     setIsLoading(true);
     try {
-      const { data } = await signIn(email, password);
-      console.error(data);
+      await signIn(email, password);
       switch (user?.user_type) {
         case "comprador":
           router.replace("/(Comprador)/homeComprador");
