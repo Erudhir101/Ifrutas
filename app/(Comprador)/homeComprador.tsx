@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Carousel from "@/components/Carousel";
+import SignOut from "@/components/SignOut";
 
 const categories = ["Frutas", "Vegetais", "Orgânicos"];
 export default function HomeComprador() {
@@ -20,6 +21,7 @@ export default function HomeComprador() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
+      <SignOut />
       <ScrollView
         style={{ flex: 1, width: "100%" }}
         showsVerticalScrollIndicator={false}

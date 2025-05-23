@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Session } from "@supabase/supabase-js";
-import { supabase, UserProfile } from "../lib/supabase"; // Certifique-se que UserProfile vem de supabase.ts
+import { supabase, UserProfile } from "../lib/supabase";
+import { router } from "expo-router"; // Import router here
 
 export type UserType = UserProfile["user_type"];
 
@@ -8,6 +9,7 @@ interface AuthContextType {
   user: UserProfile | null;
   session: Session | null;
   isLoading: boolean;
+  signInLoading: boolean;
   signUp: (
     email: string,
     password: string,
@@ -35,24 +37,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [signInLoading, setSignInLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const getAndSetProfile = async (userId: string) => {
+      try {
+        const { data, error, status } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
+
+        if (error && status !== 406) {
+          throw error;
+        }
+        if (data) {
+          setUser(data);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // 1. Check for existing session on mount
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
-        fetchUserProfile(session.user.id);
+        await getAndSetProfile(session.user.id);
       } else {
         setIsLoading(false);
       }
     });
 
+    // 2. Set up listener for auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
-
       if (session?.user) {
-        await fetchUserProfile(session.user.id);
+        await getAndSetProfile(session.user.id);
       } else {
         setUser(null);
         setIsLoading(false);
@@ -62,31 +90,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (error && error.details === "The result contains 0 rows") {
-        console.warn(
-          `Perfil não encontrado para o usuário ${userId}. Isso pode ser esperado após o cadastro inicial.`,
-        );
-        setUser(null);
-      } else if (error) {
-        console.error("Error fetching user profile:", error);
-        throw error;
-      } else {
-        setUser(data);
+  useEffect(() => {
+    if (!isLoading && user) {
+      switch (user.user_type) {
+        case "comprador":
+          router.replace("/(Comprador)/homeComprador");
+          break;
+        case "vendedor":
+          router.replace("/(Vendedor)/homeVendedor");
+          break;
+        case "entregador":
+          router.replace("/(Entregador)/homeEntregador");
+          break;
       }
-    } catch (error) {
-      console.error("Error in fetchUserProfile:", error);
-    } finally {
-      setIsLoading(false);
+    } else if (!isLoading && !user && router.canGoBack()) {
+      router.replace("/");
     }
-  };
+  }, [user, isLoading]);
 
   const signUp = async (
     email: string,
@@ -96,6 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     endereco: string,
     telefone: string,
   ) => {
+    setSignInLoading(true);
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: email.trim(),
@@ -107,44 +128,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const userId = authData.user?.id;
-
       if (!userId) {
         throw new Error("ID do usuário não encontrado após o registro.");
       }
 
-      const { data: existingProfile, error: fetchProfileError } = await supabase
+      const { data: existingProfile } = await supabase
         .from("profiles")
         .select("id")
         .eq("id", userId)
         .single();
 
-      if (fetchProfileError) {
-        console.error("Erro ao verificar perfil existente:", fetchProfileError);
-        throw fetchProfileError;
-      }
-
-      if (existingProfile) {
-        console.warn(
-          `Perfil para o usuário ${userId} já existe. Ignorando a inserção.`,
-        );
-        const { error: updateProfileError } = await supabase
-          .from("profiles")
-          .update({
-            user_type: userType,
-            full_name: fullName,
-            endereco: endereco,
-            telefone: telefone,
-          })
-          .eq("id", userId)
-          .single();
-
-        if (updateProfileError) {
-          console.warn(
-            `Perfil para o usuário ${userId} não foi criado de forma correta`,
-          );
-        }
-        return;
-      } else {
+      if (!existingProfile) {
         const { data: profileInsertData, error: profileError } = await supabase
           .from("profiles")
           .insert({
@@ -154,6 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             endereco: endereco,
             telefone: telefone,
           })
+          .select()
           .single();
 
         if (profileError) {
@@ -161,19 +156,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           throw profileError;
         }
 
-        if (profileInsertData) {
-          setUser(profileInsertData);
-        }
+        // The onAuthStateChange listener will now trigger and fetch this profile,
+        // so no need to setUser here directly after insertion.
+        // if (profileInsertData) {
+        //   setUser(profileInsertData);
+        // }
       }
     } catch (error: any) {
       console.error("Erro em signUp:", error.message);
       throw error;
+    } finally {
+      setSignInLoading(false);
     }
   };
 
   const signIn = async (email: string, password: string) => {
+    setSignInLoading(true);
     try {
-      const { error: error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password,
       });
@@ -182,16 +182,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error: any) {
       console.error("Erro em signIn:", error);
       throw error;
+    } finally {
+      setSignInLoading(false);
     }
   };
 
   const signOut = async () => {
+    setSignInLoading(true);
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
     } catch (error: any) {
       console.error("Erro em signOut:", error);
       throw error;
+    } finally {
+      setSignInLoading(false);
     }
   };
 
@@ -199,6 +204,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     session,
     isLoading,
+    signInLoading,
     signUp,
     signIn,
     signOut,
