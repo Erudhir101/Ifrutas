@@ -13,9 +13,6 @@ export default function ContaComprador() {
     >
       <DarkMode />
       <SignOut />
-      <Text style={{ color: "orange" }}>
-        {theme} - {cor}
-      </Text>
     </SafeAreaView>
   );
 }

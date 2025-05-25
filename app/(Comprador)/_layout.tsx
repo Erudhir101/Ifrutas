@@ -1,7 +1,7 @@
 import { Stack, Tabs } from "expo-router";
 import "react-native-reanimated";
 import { View, StyleSheet } from "react-native";
-import { Feather, FontAwesome } from "@expo/vector-icons";
+import { Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
 
 export default function LayoutComprador() {
@@ -16,12 +16,8 @@ export default function LayoutComprador() {
           tabBarStyle: {
             height: 60,
             backgroundColor: colors.nav,
-            borderTopWidth: 0, // Set borderTopWidth to 0
-            shadowColor: "#000", // Black shadow for better visibility
-            shadowOffset: { width: 0, height: -2 }, // Shadow coming from the top
-            shadowOpacity: 0.1, // Adjust opacity
-            shadowRadius: 5, // Adjust blur radius
-            elevation: 8, // Adjust elevation value (higher value = more prominent shadow)
+            borderTopColor: colors.text,
+            borderTopWidth: 0.5,
             paddingVertical: 5,
           },
           headerShown: false,
@@ -32,7 +28,7 @@ export default function LayoutComprador() {
           options={{
             title: "Home",
             tabBarIcon: ({ color }) => (
-              <FontAwesome size={28} name="home" color={color} />
+              <Ionicons size={28} name="home-outline" color={color} />
             ),
           }}
         />
@@ -59,7 +55,7 @@ export default function LayoutComprador() {
           options={{
             title: "Opções",
             tabBarIcon: ({ color }) => (
-              <FontAwesome size={28} name="cog" color={color} />
+              <FontAwesome size={28} name="user-o" color={color} />
             ),
           }}
         />
