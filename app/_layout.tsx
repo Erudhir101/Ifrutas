@@ -7,6 +7,8 @@ import "react-native-reanimated";
 import { ThemeProvider } from "../components/ThemeContext.js";
 import { AuthProvider } from "../hooks/AuthContext";
 import { StatusBar } from "expo-status-bar";
+import { useTheme } from "@/hooks/useTheme";
+import { Platform } from "react-native";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -41,10 +43,14 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
+  const { colors, theme } = useTheme();
   return (
     <AuthProvider>
       <ThemeProvider>
-        <StatusBar style="dark" />
+        <StatusBar
+          style={theme === "dark" ? "light" : "dark"}
+          backgroundColor={Platform.OS === "android" ? colors.text : undefined}
+        />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
         </Stack>

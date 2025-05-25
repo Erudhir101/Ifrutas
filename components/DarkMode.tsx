@@ -8,19 +8,26 @@ const DarkMode = () => {
     <View style={{ position: "absolute", top: 30, right: 20 }}>
       <TouchableOpacity
         style={{
-          backgroundColor: colors.primary,
-          padding: 16,
-          borderRadius: 24,
+          padding: 12,
+          borderRadius: "100%",
+          borderWidth: 2,
+          borderEndColor: colors.text,
+          borderStartColor: colors.text,
+          borderBlockColor: colors.text,
         }}
         onPress={toggleTheme}
       >
         {theme === "dark" ? (
-          <Text style={{ fontWeight: "bold", fontSize: 30, color: "#FFFFFF" }}>
-            <Feather name="moon" size={14} />
+          <Text
+            style={{ fontWeight: "bold", fontSize: 30, color: colors.text }}
+          >
+            <Feather name="sun" size={20} />
           </Text>
         ) : (
-          <Text style={{ fontWeight: "bold", fontSize: 30, color: "#FFFFFF" }}>
-            <Feather name="sun" size={14} />
+          <Text
+            style={{ fontWeight: "bold", fontSize: 30, color: colors.text }}
+          >
+            <Feather name="moon" size={20} />
           </Text>
         )}
       </TouchableOpacity>

@@ -1,8 +1,15 @@
 import { useAuth } from "@/hooks/AuthContext";
+import { useTheme } from "@/hooks/useTheme";
 import { router } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 
 export default function SignOut() {
+  const { colors } = useTheme();
   const { signInLoading, signOut } = useAuth();
   return (
     <TouchableOpacity
@@ -12,7 +19,9 @@ export default function SignOut() {
         router.replace("/(auth)/login");
       }}
     >
-      <Text>{signInLoading ? "saindo...." : "sair"}</Text>
+      <Text>
+        {signInLoading ? <ActivityIndicator color={colors.primary} /> : "sair"}
+      </Text>
     </TouchableOpacity>
   );
 }

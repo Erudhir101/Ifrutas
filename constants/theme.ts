@@ -5,6 +5,7 @@ export type ColorPalette = {
   secondary: string;
   border: string;
   card: string;
+  nav: string;
 };
 
 export type Theme = "light" | "dark"; // Or whatever theme names you have
@@ -21,6 +22,7 @@ export const themes: Themes = {
     secondary: "#5856D6",
     border: "#E5E5EA",
     card: "#F2F2F7",
+    nav: "#FAFAFA",
   },
   dark: {
     background: "#000000",
@@ -29,5 +31,6 @@ export const themes: Themes = {
     secondary: "#5E5CE6",
     border: "#38383A",
     card: "#1C1C1E",
+    nav: "#101010",
   },
 };
