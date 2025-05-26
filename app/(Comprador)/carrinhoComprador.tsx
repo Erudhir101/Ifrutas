@@ -1,18 +1,24 @@
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/hooks/useTheme";
 import { useEffect, useState } from "react";
 import SearchInput from "@/components/SearchInput";
 
 const initialItems = [
-  { id: "1", name: "Apple", category: "Fruit" },
-  { id: "2", name: "Banana", category: "Fruit" },
-  { id: "3", name: "Carrot", category: "Vegetable" },
-  { id: "4", name: "Dog", category: "Animal" },
-  { id: "5", name: "Elephant", category: "Animal" },
-  { id: "6", name: "Grape", category: "Fruit" },
-  { id: "7", name: "Tomato", category: "Fruit/Vegetable" },
-  { id: "8", name: "Zebra", category: "Animal" },
+  { id: "1", value: 23, name: "Apple", category: "Fruit" },
+  { id: "2", value: 20, name: "Banana", category: "Fruit" },
+  { id: "3", value: 13, name: "Carrot", category: "Vegetable" },
+  { id: "4", value: 33, name: "Dog", category: "Animal" },
+  { id: "5", value: 43, name: "Elephant", category: "Animal" },
+  { id: "6", value: 63, name: "Grape", category: "Fruit" },
+  { id: "7", value: 93, name: "Tomato", category: "Fruit/Vegetable" },
+  { id: "8", value: 33, name: "Zebra", category: "Animal" },
 ];
 
 export default function CarrinhoComprador() {
@@ -46,15 +52,38 @@ export default function CarrinhoComprador() {
         { backgroundColor: colors.nav, shadowColor: colors.text },
       ]}
     >
-      <Text style={[styles.itemName, { color: colors.text }]}>{item.name}</Text>
-      <Text style={[styles.itemCategory, { color: colors.secondary }]}>
-        {item.category}
-      </Text>
+      <View style={[{ gap: 8 }]}>
+        <Text style={[styles.itemName, { color: colors.text }]}>
+          {item.name}
+        </Text>
+        <Text style={[styles.itemCategory, { color: colors.secondary }]}>
+          {item.category}
+        </Text>
+        <Text style={[styles.itemValue, { color: colors.text }]}>
+          R$ {item.value}
+        </Text>
+      </View>
+      <TouchableOpacity
+        style={{
+          alignSelf: "flex-end",
+          backgroundColor: colors.secondary,
+          borderRadius: 16,
+        }}
+      >
+        <Text
+          style={{
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            color: colors.nav,
+          }}
+        >
+          Remover
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 
   const { colors } = useTheme();
-  //TODO: fazer as informacoes do pedido
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -70,7 +99,31 @@ export default function CarrinhoComprador() {
             { backgroundColor: colors.background, shadowColor: colors.text },
           ]}
         >
-          <Text>Valor</Text>
+          <Text
+            style={{ color: colors.text, fontSize: 20, fontWeight: "bold" }}
+          >
+            Total R$ {initialItems.reduce((acc, curr) => acc + curr.value, 0)}
+          </Text>
+          <Text>Endereço</Text>
+          <TouchableOpacity
+            style={{
+              backgroundColor: colors.primary,
+              borderRadius: 8,
+              paddingVertical: 18,
+              paddingHorizontal: 8,
+              width: "85%",
+            }}
+          >
+            <Text
+              style={{
+                textAlign: "center",
+                color: colors.nav,
+                fontWeight: "semibold",
+              }}
+            >
+              Comprar
+            </Text>
+          </TouchableOpacity>
         </View>
         <FlatList
           data={filteredItems}
@@ -100,6 +153,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   listItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     padding: 15,
     marginVertical: 8,
     marginHorizontal: 20,
@@ -110,11 +165,15 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   itemName: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "600",
   },
   itemCategory: {
     fontSize: 14,
+    marginTop: 4,
+  },
+  itemValue: {
+    fontSize: 16,
     marginTop: 4,
   },
   listContent: {
@@ -126,7 +185,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   info: {
-    borderWidth: 2,
-    borderRadius: 16,
+    alignItems: "center",
+    gap: 16,
   },
 });

@@ -24,6 +24,14 @@ export interface UserProfile {
   telefone?: string;
 }
 
+export interface ProductProfile {
+  id: string;
+  full_name: string;
+  image: string;
+  endereco?: string;
+  telefone?: string;
+}
+
 export interface Database {
   public: {
     Tables: {

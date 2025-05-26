@@ -59,6 +59,10 @@ function RootLayoutContent() {
       <StatusBar style={theme === "dark" ? "light" : "dark"} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(Comprador)" />
+        <Stack.Screen name="(Vendedor)" />
+        <Stack.Screen name="(Entregador)" />
       </Stack>
     </>
   );
