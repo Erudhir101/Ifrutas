@@ -10,52 +10,18 @@ import {
   Platform,
   Alert,
   TextInput,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import VoltarBotao from "@/components/VoltarBotao";
 import { useTheme } from "@/hooks/useTheme";
 import { EvilIcons, FontAwesome } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { useState } from "react";
-
-const listaProdutos = [
-  {
-    id: 2,
-    name: "banana",
-    value: 12,
-    uri: "https://picsum.photos/seed/697/3000/2000",
-  },
-  {
-    id: 3,
-    name: "abacaxi",
-    value: 42,
-    uri: "https://picsum.photos/seed/697/3000/2000",
-  },
-  {
-    id: 4,
-    name: "pera",
-    value: 62,
-    uri: "https://picsum.photos/seed/697/3000/2000",
-  },
-  {
-    id: 5,
-    name: "uva",
-    value: 52,
-    uri: "https://picsum.photos/seed/697/3000/2000",
-  },
-  {
-    id: 6,
-    name: "maça",
-    value: 32,
-    uri: "https://picsum.photos/seed/697/3000/2000",
-  },
-  {
-    id: 7,
-    name: "melancia",
-    value: 22,
-    uri: "https://picsum.photos/seed/697/3000/2000",
-  },
-];
+import { useEffect, useState } from "react";
+import { Product, Category, Measure } from "@/lib/supabase";
+import { useAuth } from "@/hooks/AuthContext";
+import { Picker } from "@react-native-picker/picker";
+import { createProduct, fetchProducts } from "@/lib/product";
 
 function Item({ item, colors }) {
   return (
@@ -67,7 +33,7 @@ function Item({ item, colors }) {
         ]}
         onPress={() => alert(`You pressed ${item.name}`)}
       >
-        <Image style={styles.image} source={{ uri: item.uri }} />
+        <Image style={styles.image} source={{ uri: item.image }} />
         <Text
           style={{
             color: colors.text,
@@ -90,16 +56,54 @@ function Item({ item, colors }) {
 
 export default function CriarProduto() {
   const { colors } = useTheme();
-  const [products, setProducts] = useState(listaProdutos);
+  const { user } = useAuth();
   const [modalVisible, setModalVisible] = useState(false);
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [product, setProduct] = useState<
+    Omit<Product, "id" | "image" | "created_at" | "updated_at">
+  >({
+    name: "",
+    description: "",
+    price: null,
+    amount: null,
+    available: true,
+    seller: user?.id ?? null,
+    category: null,
+    measure: null,
+  });
 
-  const [newProductName, setNewProductName] = useState("");
-  const [newProductPrice, setNewProductPrice] = useState("");
-  const [newImage, setNewImage] = useState<string | null>(null);
+  const loadProducts = async () => {
+    const fetched = await fetchProducts();
+    setProducts(fetched);
+  };
 
-  const handleAddProduct = () => {
-    // Basic validation
-    if (!newProductName.trim() || !newProductPrice.trim() || !newImage) {
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const handleChange = (
+    field: keyof Product,
+    value: string | number | boolean | null,
+  ) => {
+    setProduct((prevData) => ({
+      ...prevData,
+      [field]: value,
+    }));
+  };
+
+  const handleAddProduct = async () => {
+    if (!product) return;
+    if (
+      !product.name?.trim() ||
+      !product.description?.trim() ||
+      !product.price ||
+      !product.amount ||
+      !product.category ||
+      !product.measure ||
+      !product.seller ||
+      !imageUri
+    ) {
       Alert.alert(
         "Error",
         "Por favor inclua o Nome, Preço e Imagem do Produto!",
@@ -107,19 +111,35 @@ export default function CriarProduto() {
       return;
     }
 
-    const newProduct = {
-      id: products.length + 1,
-      name: newProductName.trim(),
-      value: parseFloat(newProductPrice.trim()),
-      uri: newImage,
-    };
+    try {
+      const newProduct = await createProduct(product, imageUri);
 
-    setProducts([...products, newProduct]);
-    setNewProductName("");
-    setNewProductPrice("");
-    setNewImage(null);
-    setModalVisible(false);
-    Alert.alert("Success", `${newProduct.name} adicionado na lista!`);
+      if (newProduct) {
+        setProducts((prev) => [...prev, newProduct]);
+        Alert.alert("Sucesso", `${newProduct.name} adicionado à lista!`);
+        // Limpar formulário e imagem
+        setProduct({
+          name: "",
+          description: "",
+          price: null,
+          amount: null,
+          available: true,
+          seller: user?.id ?? null,
+          category: null,
+          measure: null,
+        });
+        setImageUri(null);
+        setModalVisible(false);
+      } else {
+        Alert.alert("Erro", "Não foi possível adicionar o produto.");
+      }
+    } catch (error: any) {
+      console.error("Erro ao adicionar produto no componente:", error.message);
+      Alert.alert(
+        "Erro",
+        `Não foi possível adicionar o produto: ${error.message}`,
+      );
+    }
   };
 
   const pickImage = async () => {
@@ -141,8 +161,8 @@ export default function CriarProduto() {
       quality: 1,
     });
 
-    if (!result.canceled) {
-      setNewImage(result.assets[0].uri); // Set the URI of the selected image
+    if (!result.canceled && product) {
+      setImageUri(result.assets[0].uri);
     }
   };
 
@@ -164,8 +184,8 @@ export default function CriarProduto() {
       quality: 1,
     });
 
-    if (!result.canceled) {
-      setNewImage(result.assets[0].uri);
+    if (!result.canceled && product) {
+      setImageUri(result.assets[0].uri);
     }
   };
 
@@ -180,7 +200,7 @@ export default function CriarProduto() {
       <FlatList
         data={products}
         renderItem={({ item }) => <Item item={item} colors={colors} />}
-        keyExtractor={(item) => `${item.id}`}
+        keyExtractor={(item) => `${item.created_at}`}
         numColumns={4}
         contentContainerStyle={styles.items}
         columnWrapperStyle={styles.wrapper}
@@ -209,7 +229,7 @@ export default function CriarProduto() {
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
-          Alert.alert("Modal has been closed.");
+          Alert.alert("Modal foi fechado.");
           setModalVisible(!modalVisible);
         }}
       >
@@ -217,132 +237,288 @@ export default function CriarProduto() {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.centeredView}
         >
-          <View
-            style={[
-              styles.modalView,
-              { backgroundColor: colors.background, shadowColor: colors.text },
-            ]}
-          >
-            <Text style={[styles.modalTitle, { color: colors.text }]}>
-              Crie um Novo Produto
-            </Text>
-
-            <View style={[styles.inputs]}>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    color: colors.text,
-                    backgroundColor: colors.background,
-                    borderColor: colors.border,
-                  },
-                ]}
-                placeholder="Produto"
-                placeholderTextColor="#999"
-                value={newProductName}
-                onChangeText={setNewProductName}
-                autoCapitalize="words"
-              />
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    color: colors.text,
-                    backgroundColor: colors.background,
-                    borderColor: colors.border,
-                  },
-                ]}
-                placeholder="Preço"
-                placeholderTextColor="#999"
-                value={newProductPrice}
-                onChangeText={setNewProductPrice}
-                keyboardType="numeric"
-              />
-            </View>
+          <ScrollView contentContainerStyle={styles.scrollContent}>
             <View
               style={[
-                styles.section,
+                styles.modalView,
                 {
                   backgroundColor: colors.background,
                   shadowColor: colors.text,
                 },
               ]}
             >
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Escolha uma Imagem do Produto
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                Crie um Novo Produto
               </Text>
+
+              <View style={[styles.inputs]}>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      color: colors.text,
+                      backgroundColor: colors.background,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                  placeholder="Nome do Produto"
+                  placeholderTextColor="#999"
+                  value={product.name || ""}
+                  onChangeText={(text) => handleChange("name", text)}
+                  autoCapitalize="words"
+                />
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      color: colors.text,
+                      backgroundColor: colors.background,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                  multiline
+                  numberOfLines={3}
+                  placeholder="Descrição do Produto"
+                  placeholderTextColor="#999"
+                  value={product.description || ""}
+                  onChangeText={(text) => handleChange("description", text)}
+                />
+                <View
+                  style={{
+                    flexDirection: "row",
+                    gap: 16,
+                  }}
+                >
+                  <TextInput
+                    style={[
+                      styles.input,
+                      {
+                        color: colors.text,
+                        backgroundColor: colors.background,
+                        borderColor: colors.border,
+                        textAlign: "center",
+                        width: 200,
+                      },
+                    ]}
+                    placeholder="Preço"
+                    placeholderTextColor="#999"
+                    value={product.price !== null ? String(product.price) : ""}
+                    onChangeText={(text) =>
+                      handleChange("price", parseFloat(text) || null)
+                    }
+                    keyboardType="numeric"
+                  />
+                  <TextInput
+                    style={[
+                      styles.input,
+                      {
+                        color: colors.text,
+                        backgroundColor: colors.background,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                    placeholder="Quantidade"
+                    placeholderTextColor="#999"
+                    value={
+                      product.amount !== null ? String(product.amount) : ""
+                    }
+                    onChangeText={(text) =>
+                      handleChange("amount", parseInt(text) || null)
+                    }
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    width: "100%",
+                    gap: 16,
+                  }}
+                >
+                  <View
+                    style={[
+                      styles.pickerContainer,
+                      {
+                        borderColor: colors.border,
+                        backgroundColor: colors.background,
+                      },
+                    ]}
+                  >
+                    <Picker
+                      selectedValue={product.category ?? undefined}
+                      onValueChange={(itemValue: Category) =>
+                        handleChange("category", itemValue)
+                      }
+                      style={{ color: colors.text }}
+                      itemStyle={{ color: colors.text }} // Estilo para os itens no Android
+                    >
+                      <Picker.Item
+                        label="Categoria"
+                        value={null}
+                        enabled={false}
+                        style={{ color: "#999" }}
+                      />
+                      {[
+                        "Frutas",
+                        "Verduras",
+                        "Legumes",
+                        "Temperos",
+                        "Graos",
+                        "Organicos",
+                        "Laticinios",
+                        "Ovos",
+                        "Ervas",
+                        "Outros",
+                      ].map((category) => (
+                        <Picker.Item
+                          key={category}
+                          label={category.toUpperCase()}
+                          value={category}
+                        />
+                      ))}
+                    </Picker>
+                  </View>
+
+                  <View
+                    style={[
+                      styles.pickerContainer,
+                      {
+                        borderColor: colors.border,
+                        backgroundColor: colors.background,
+                      },
+                    ]}
+                  >
+                    <Picker
+                      selectedValue={product.measure ?? undefined}
+                      onValueChange={(itemValue: Measure) =>
+                        handleChange("measure", itemValue)
+                      }
+                      style={{ color: colors.text }}
+                      itemStyle={{ color: colors.text }} // Estilo para os itens no Android
+                    >
+                      <Picker.Item
+                        label="Medida"
+                        value={null}
+                        enabled={false}
+                        style={{ color: "#999" }}
+                      />
+                      {[
+                        "kilograma (kg)",
+                        "grama (g)",
+                        "unidade",
+                        "cacho",
+                        "maca",
+                        "bandeja",
+                        "duzia",
+                        "pacote",
+                        "litro (l)",
+                        "mililitros (ml)",
+                      ].map((measure) => (
+                        <Picker.Item
+                          key={measure}
+                          label={measure.toUpperCase()}
+                          value={measure}
+                        />
+                      ))}
+                    </Picker>
+                  </View>
+                </View>
+              </View>
+              <View
+                style={[
+                  styles.section,
+                  {
+                    backgroundColor: colors.background,
+                    shadowColor: colors.text,
+                  },
+                ]}
+              >
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  Escolha uma Imagem do Produto
+                </Text>
+
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={[
+                      styles.pickerButton,
+                      {
+                        backgroundColor: colors.primary,
+                        shadowColor: colors.text,
+                      },
+                    ]}
+                    onPress={pickImage}
+                  >
+                    <FontAwesome name="image" size={24} color={colors.nav} />
+                    <Text
+                      style={[styles.pickerButtonText, { color: colors.nav }]}
+                    >
+                      Escolha da galeria
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.pickerButton,
+                      {
+                        backgroundColor: colors.primary,
+                        shadowColor: colors.text,
+                      },
+                    ]}
+                    onPress={takePhoto}
+                  >
+                    <FontAwesome name="camera" size={24} color={colors.nav} />
+                    <Text
+                      style={[styles.pickerButtonText, { color: colors.nav }]}
+                    >
+                      Tire a Foto
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {imageUri ? (
+                  <Image
+                    source={{ uri: imageUri }}
+                    style={styles.previewImage}
+                  />
+                ) : (
+                  <Text style={styles.noImageText}>
+                    Nenhuma imagem selecionada!
+                  </Text>
+                )}
+              </View>
 
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
-                  style={[
-                    styles.pickerButton,
-                    {
-                      backgroundColor: colors.primary,
-                      shadowColor: colors.text,
-                    },
-                  ]}
-                  onPress={pickImage}
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => {
+                    setModalVisible(false);
+                    setProduct({
+                      name: "",
+                      description: "",
+                      price: null,
+                      amount: null,
+                      available: true,
+                      seller: user?.id ?? null,
+                      category: null,
+                      measure: null,
+                    });
+                  }}
                 >
-                  <FontAwesome name="image" size={24} color={colors.nav} />
-                  <Text
-                    style={[styles.pickerButtonText, { color: colors.nav }]}
-                  >
-                    Pick from Gallery
+                  <Text style={[styles.buttonText, { color: colors.text }]}>
+                    Cancelar
                   </Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
-                  style={[
-                    styles.pickerButton,
-                    {
-                      backgroundColor: colors.primary,
-                      shadowColor: colors.text,
-                    },
-                  ]}
-                  onPress={takePhoto}
+                  style={[styles.modalButton, styles.saveButton]}
+                  onPress={handleAddProduct}
                 >
-                  <FontAwesome name="camera" size={24} color={colors.nav} />
-                  <Text
-                    style={[styles.pickerButtonText, { color: colors.nav }]}
-                  >
-                    Take Photo
+                  <Text style={[styles.buttonText, { color: colors.text }]}>
+                    Criar Produto
                   </Text>
                 </TouchableOpacity>
               </View>
-
-              {newImage ? (
-                <Image source={{ uri: newImage }} style={styles.previewImage} />
-              ) : (
-                <Text style={styles.noImageText}>
-                  Nenhuma imagem selecionada!
-                </Text>
-              )}
             </View>
-
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => {
-                  setModalVisible(false);
-                  setNewProductName("");
-                  setNewProductPrice("");
-                  setNewImage(null);
-                }}
-              >
-                <Text style={[styles.buttonText, { color: colors.text }]}>
-                  Cancelar
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.modalButton, styles.saveButton]}
-                onPress={handleAddProduct}
-              >
-                <Text style={[styles.buttonText, { color: colors.text }]}>
-                  Criar Produto
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
@@ -355,6 +531,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 8,
     paddingVertical: 16,
+  },
+  scrollContent: {
+    justifyContent: "center",
+    alignItems: "center",
   },
   wrapper: {
     justifyContent: "space-between",
@@ -376,8 +556,8 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background overlay
   },
   modalView: {
-    margin: 20,
     borderRadius: 20,
+    marginTop: 16,
     padding: 35,
     alignItems: "center",
     gap: 50,
@@ -388,8 +568,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    width: "95%", // Make modal responsive
-    maxWidth: 900, // Max width for larger screens
+    width: "100%",
+    maxWidth: 900,
   },
   modalTitle: {
     fontSize: 22,
@@ -400,17 +580,25 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   input: {
-    width: "100%",
     height: 50,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 15,
     fontSize: 16,
   },
+  pickerContainer: {
+    flex: 1,
+    height: 50,
+    borderWidth: 1,
+    borderRadius: 8,
+    overflow: "hidden",
+    justifyContent: "center",
+  },
   section: {
     width: "100%",
     alignItems: "center",
     borderRadius: 10,
+    borderWidth: 1,
     padding: 15,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -424,15 +612,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   buttonContainer: {
+    width: "85%",
     justifyContent: "center",
-    width: "100%",
     gap: 20,
   },
   modalButton: {
     height: 50,
     borderRadius: 10,
-    elevation: 2,
-    marginHorizontal: 5,
     justifyContent: "center",
   },
   cancelButton: {
