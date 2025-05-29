@@ -28,3 +28,4 @@ const styles = StyleSheet.create({
     elevation: 4, // Para sombra no Android
   },
 });
+

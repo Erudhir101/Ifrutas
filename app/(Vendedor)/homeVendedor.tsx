@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Card from "@/components/Card";
+import Card from "@/components/Card"; // Importando o componente Card
 
 export default function HomeVendedor() {
   const { colors } = useTheme();
