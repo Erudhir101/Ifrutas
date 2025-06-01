@@ -61,6 +61,7 @@ export type Measure =
   | "mililitros (ml)";
 
 export interface Product {
+  id: string;
   name: string | null;
   description: string | null;
   price: number | null;

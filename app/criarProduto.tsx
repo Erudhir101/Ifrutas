@@ -5,63 +5,40 @@ import {
   Image,
   FlatList,
   TouchableOpacity,
+  Alert,
+  Platform,
   Modal,
   KeyboardAvoidingView,
-  Platform,
-  Alert,
-  TextInput,
   ScrollView,
+  TextInput,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import VoltarBotao from "@/components/VoltarBotao";
 import { useTheme } from "@/hooks/useTheme";
 import { EvilIcons, FontAwesome } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import { useEffect, useState } from "react";
-import { Product, Category, Measure } from "@/lib/supabase";
+import { Category, Measure, Product, UserProfile } from "@/lib/supabase";
 import { useAuth } from "@/hooks/AuthContext";
+import {
+  createProduct,
+  deleteProduct,
+  fetchProducts,
+  updateProduct,
+} from "@/lib/product";
+import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
-import { createProduct, fetchProducts } from "@/lib/product";
-
-function Item({ item, colors }) {
-  return (
-    <>
-      <TouchableOpacity
-        style={[
-          styles.item,
-          { backgroundColor: colors.card, width: 71, height: 60 },
-        ]}
-        onPress={() => alert(`You pressed ${item.name}`)}
-      >
-        <Image style={styles.image} source={{ uri: item.image }} />
-        <Text
-          style={{
-            color: colors.text,
-            fontWeight: "bold",
-            textAlign: "center",
-          }}
-        >
-          {item.name}
-        </Text>
-        <EvilIcons
-          name="pencil"
-          size={36}
-          color={colors.secondary}
-          style={{ position: "absolute", top: -19, right: -5 }}
-        />
-      </TouchableOpacity>
-    </>
-  );
-}
+import { ColorPalette } from "@/constants/theme";
 
 export default function CriarProduto() {
   const { colors } = useTheme();
   const { user } = useAuth();
   const [modalVisible, setModalVisible] = useState(false);
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [type, setType] = useState<"add" | "update">("add");
+  const [index, setIndex] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
   const [product, setProduct] = useState<
-    Omit<Product, "id" | "image" | "created_at" | "updated_at">
+    Omit<Product, "id" | "created_at" | "updated_at">
   >({
     name: "",
     description: "",
@@ -71,6 +48,7 @@ export default function CriarProduto() {
     seller: user?.id ?? null,
     category: null,
     measure: null,
+    image: null,
   });
 
   const loadProducts = async () => {
@@ -82,6 +60,129 @@ export default function CriarProduto() {
     loadProducts();
   }, []);
 
+  function Item({ item, index }: { item: Product; index: number }) {
+    return (
+      <>
+        <TouchableOpacity
+          style={[
+            styles.item,
+            { backgroundColor: colors.card, width: 71, height: 60 },
+          ]}
+          onPress={() => {
+            setType("update");
+            setProduct(item);
+            setIndex(index);
+            setModalVisible(true);
+          }}
+        >
+          <Image
+            style={styles.image}
+            source={{ uri: item.image ?? undefined }}
+          />
+          <Text
+            style={{
+              color: colors.text,
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+          >
+            {item.name}
+          </Text>
+          <EvilIcons
+            name="pencil"
+            size={36}
+            color={colors.secondary}
+            style={{ position: "absolute", top: -19, right: -5 }}
+          />
+        </TouchableOpacity>
+      </>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={{ alignSelf: "flex-start" }}>
+        <VoltarBotao />
+      </View>
+      <Text style={{ fontWeight: "bold", fontSize: 25, color: colors.text }}>
+        Lista de Produtos
+      </Text>
+      <FlatList
+        data={products}
+        renderItem={({ item, index }) => <Item item={item} index={index} />}
+        keyExtractor={(item) => `${item.created_at}`}
+        numColumns={4}
+        contentContainerStyle={styles.items}
+        columnWrapperStyle={styles.wrapper}
+      />
+      <TouchableOpacity
+        style={{
+          width: "80%",
+          backgroundColor: colors.primary,
+          borderRadius: 12,
+        }}
+        onPress={() => {
+          setType("add");
+          setModalVisible(true);
+        }}
+      >
+        <Text
+          style={{
+            color: colors.nav,
+            textAlign: "center",
+            paddingHorizontal: 16,
+            paddingVertical: 16,
+          }}
+        >
+          Adicionar Produto
+        </Text>
+      </TouchableOpacity>
+      <ModalProduct
+        user={user}
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        index={index}
+        setIndex={setIndex}
+        product={product}
+        setProduct={setProduct}
+        products={products}
+        setProducts={setProducts}
+        type={type}
+        colors={colors}
+      />
+    </SafeAreaView>
+  );
+}
+
+function ModalProduct({
+  user,
+  modalVisible,
+  setModalVisible,
+  index,
+  setIndex,
+  type,
+  product,
+  setProduct,
+  products,
+  setProducts,
+  colors,
+}: {
+  user: UserProfile | null;
+  modalVisible: boolean;
+  setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  index: number;
+  setIndex: React.Dispatch<React.SetStateAction<number>>;
+  type: "add" | "update";
+  product: Omit<Product, "id" | "created_at" | "updated_at">;
+  setProduct: React.Dispatch<
+    React.SetStateAction<Omit<Product, "id" | "created_at" | "updated_at">>
+  >; //
+  products: Product[];
+  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  colors: ColorPalette;
+}) {
+  const [isloading, setIsLoading] = useState(false);
+
   const handleChange = (
     field: keyof Product,
     value: string | number | boolean | null,
@@ -92,7 +193,33 @@ export default function CriarProduto() {
     }));
   };
 
-  const handleAddProduct = async () => {
+  function verifiedProduct(obj1, obj2) {
+    if (
+      typeof obj1 !== "object" ||
+      obj1 === null ||
+      typeof obj2 !== "object" ||
+      obj2 === null
+    ) {
+      return false;
+    }
+
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+
+    if (keys1.length !== keys2.length) {
+      return false;
+    }
+
+    for (let key of keys1) {
+      if (!obj2.hasOwnProperty(key) || obj1[key] !== obj2[key]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  async function handleAddProduct() {
     if (!product) return;
     if (
       !product.name?.trim() ||
@@ -102,7 +229,7 @@ export default function CriarProduto() {
       !product.category ||
       !product.measure ||
       !product.seller ||
-      !imageUri
+      !product.image
     ) {
       Alert.alert(
         "Error",
@@ -112,7 +239,8 @@ export default function CriarProduto() {
     }
 
     try {
-      const newProduct = await createProduct(product, imageUri);
+      setIsLoading(true);
+      const newProduct = await createProduct(product, product.image);
 
       if (newProduct) {
         setProducts((prev) => [...prev, newProduct]);
@@ -127,9 +255,10 @@ export default function CriarProduto() {
           seller: user?.id ?? null,
           category: null,
           measure: null,
+          image: null,
         });
-        setImageUri(null);
         setModalVisible(false);
+        setIsLoading(false);
       } else {
         Alert.alert("Erro", "Não foi possível adicionar o produto.");
       }
@@ -140,8 +269,74 @@ export default function CriarProduto() {
         `Não foi possível adicionar o produto: ${error.message}`,
       );
     }
-  };
+  }
 
+  async function handleUpdateProduct() {
+    if (!product) return;
+    if (
+      !product.name?.trim() ||
+      !product.description?.trim() ||
+      !product.price ||
+      !product.amount ||
+      !product.category ||
+      !product.measure ||
+      !product.seller ||
+      !product.image
+    ) {
+      Alert.alert(
+        "Error",
+        "Por favor inclua o Nome, Preço e Imagem do Produto!",
+      );
+      return;
+    }
+    handleChange("name", product.name.trim());
+    handleChange("description", product.description.trim());
+
+    if (verifiedProduct(product, products[index])) {
+      Alert.alert("Error", "Por favor modifique o valor do Produto!");
+      return;
+    }
+
+    try {
+      const update = await updateProduct(
+        product,
+        products[index],
+        product.image,
+      );
+
+      if (update) {
+        setIsLoading(true);
+        setProducts((prevProducts) =>
+          prevProducts.map((product) =>
+            product.id === update.id ? update : product,
+          ),
+        );
+        Alert.alert("Sucesso", `${update.name} Atualizado à lista!`);
+        // Limpar formulário e imagem
+        setProduct({
+          name: "",
+          description: "",
+          price: null,
+          amount: null,
+          available: true,
+          seller: user?.id ?? null,
+          category: null,
+          measure: null,
+          image: null,
+        });
+        setModalVisible(false);
+        setIsLoading(false);
+      } else {
+        Alert.alert("Erro", "Não foi possível adicionar o produto.");
+      }
+    } catch (error: any) {
+      console.error("Erro ao adicionar produto no componente:", error.message);
+      Alert.alert(
+        "Erro",
+        `Não foi possível adicionar o produto: ${error.message}`,
+      );
+    }
+  }
   const pickImage = async () => {
     if (Platform.OS !== "web") {
       const { status } =
@@ -162,7 +357,7 @@ export default function CriarProduto() {
     });
 
     if (!result.canceled && product) {
-      setImageUri(result.assets[0].uri);
+      handleChange("image", result.assets[0].uri);
     }
   };
 
@@ -185,343 +380,372 @@ export default function CriarProduto() {
     });
 
     if (!result.canceled && product) {
-      setImageUri(result.assets[0].uri);
+      handleChange("image", result.assets[0].uri);
     }
   };
 
+  async function handleDeleteProduct() {
+    if (!products[index]) return;
+    setIsLoading(true);
+    await deleteProduct(products[index]);
+    setProducts(products.filter((_, idx) => idx !== index));
+    setProduct({
+      name: "",
+      description: "",
+      price: null,
+      amount: null,
+      available: true,
+      seller: user?.id ?? null,
+      category: null,
+      measure: null,
+      image: null,
+    });
+    setModalVisible(false);
+    setIsLoading(false);
+  }
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={{ alignSelf: "flex-start" }}>
-        <VoltarBotao />
-      </View>
-      <Text style={{ fontWeight: "bold", fontSize: 25, color: colors.text }}>
-        Lista de Produtos
-      </Text>
-      <FlatList
-        data={products}
-        renderItem={({ item }) => <Item item={item} colors={colors} />}
-        keyExtractor={(item) => `${item.created_at}`}
-        numColumns={4}
-        contentContainerStyle={styles.items}
-        columnWrapperStyle={styles.wrapper}
-      />
-      <TouchableOpacity
-        style={{
-          width: "80%",
-          backgroundColor: colors.primary,
-          borderRadius: 12,
-        }}
-        onPress={() => setModalVisible(true)}
+    <Modal animationType="fade" transparent={true} visible={modalVisible}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.centeredView}
       >
-        <Text
-          style={{
-            color: colors.nav,
-            textAlign: "center",
-            paddingHorizontal: 16,
-            paddingVertical: 16,
-          }}
-        >
-          Adicionar Produto
-        </Text>
-      </TouchableOpacity>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          Alert.alert("Modal foi fechado.");
-          setModalVisible(!modalVisible);
-        }}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.centeredView}
-        >
-          <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View
+            style={[
+              styles.modalView,
+              {
+                backgroundColor: colors.background,
+                shadowColor: colors.text,
+              },
+            ]}
+          >
+            {type === "add" ? null : (
+              <TouchableOpacity
+                disabled={isloading}
+                style={[
+                  styles.pickerButton,
+                  {
+                    backgroundColor: colors.secondary,
+                    shadowColor: colors.text,
+                    borderRadius: 20,
+                    position: "absolute",
+                    top: 2,
+                    right: 2,
+                  },
+                ]}
+                onPress={handleDeleteProduct}
+              >
+                {isloading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <>
+                    <FontAwesome name="trash-o" size={14} color={colors.nav} />
+                    <Text
+                      style={[
+                        styles.pickerButtonText,
+                        { color: colors.nav, fontSize: 12 },
+                      ]}
+                    >
+                      Excluir Produto
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
+              {type === "add" ? "Crie um Novo Produto" : "Atualize o Produto"}
+            </Text>
+
+            <View style={[styles.inputs]}>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    color: colors.text,
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                  },
+                ]}
+                placeholder="Nome do Produto"
+                placeholderTextColor="#999"
+                value={product.name || ""}
+                onChangeText={(text) => handleChange("name", text)}
+                autoCapitalize="words"
+              />
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    color: colors.text,
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                  },
+                ]}
+                multiline
+                numberOfLines={3}
+                placeholder="Descrição do Produto"
+                placeholderTextColor="#999"
+                value={product.description || ""}
+                onChangeText={(text) => handleChange("description", text)}
+              />
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: 16,
+                }}
+              >
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      color: colors.text,
+                      backgroundColor: colors.background,
+                      borderColor: colors.border,
+                      textAlign: "center",
+                      width: 180,
+                    },
+                  ]}
+                  placeholder="Preço"
+                  placeholderTextColor="#999"
+                  value={product.price !== null ? String(product.price) : ""}
+                  onChangeText={(text) =>
+                    handleChange("price", parseFloat(text) || null)
+                  }
+                  keyboardType="numeric"
+                />
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      color: colors.text,
+                      backgroundColor: colors.background,
+                      borderColor: colors.border,
+                      flex: 1,
+                    },
+                  ]}
+                  placeholder="Quantidade"
+                  placeholderTextColor="#999"
+                  value={product.amount !== null ? String(product.amount) : ""}
+                  onChangeText={(text) =>
+                    handleChange("amount", parseInt(text) || null)
+                  }
+                  keyboardType="numeric"
+                />
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  width: "100%",
+                  gap: 16,
+                }}
+              >
+                <View
+                  style={[
+                    styles.pickerContainer,
+                    {
+                      borderColor: colors.border,
+                      backgroundColor: colors.background,
+                    },
+                  ]}
+                >
+                  <Picker
+                    selectedValue={product.category ?? undefined}
+                    onValueChange={(itemValue: Category) =>
+                      handleChange("category", itemValue)
+                    }
+                    style={{ color: colors.text }}
+                    itemStyle={{ color: colors.text }} // Estilo para os itens no Android
+                  >
+                    <Picker.Item
+                      label="Categoria"
+                      value={null}
+                      enabled={false}
+                      style={{ color: "#999" }}
+                    />
+                    {[
+                      "Frutas",
+                      "Verduras",
+                      "Legumes",
+                      "Temperos",
+                      "Graos",
+                      "Organicos",
+                      "Laticinios",
+                      "Ovos",
+                      "Ervas",
+                      "Outros",
+                    ].map((category) => (
+                      <Picker.Item
+                        key={category}
+                        label={category.toUpperCase()}
+                        value={category}
+                      />
+                    ))}
+                  </Picker>
+                </View>
+
+                <View
+                  style={[
+                    styles.pickerContainer,
+                    {
+                      borderColor: colors.border,
+                      backgroundColor: colors.background,
+                    },
+                  ]}
+                >
+                  <Picker
+                    selectedValue={product.measure ?? undefined}
+                    onValueChange={(itemValue: Measure) =>
+                      handleChange("measure", itemValue)
+                    }
+                    style={{ color: colors.text }}
+                    itemStyle={{ color: colors.text }} // Estilo para os itens no Android
+                  >
+                    <Picker.Item
+                      label="Medida"
+                      value={null}
+                      enabled={false}
+                      style={{ color: "#999" }}
+                    />
+                    {[
+                      "kilograma (kg)",
+                      "grama (g)",
+                      "unidade",
+                      "cacho",
+                      "maca",
+                      "bandeja",
+                      "duzia",
+                      "pacote",
+                      "litro (l)",
+                      "mililitros (ml)",
+                    ].map((measure) => (
+                      <Picker.Item
+                        key={measure}
+                        label={measure.toUpperCase()}
+                        value={measure}
+                      />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+            </View>
             <View
               style={[
-                styles.modalView,
+                styles.section,
                 {
                   backgroundColor: colors.background,
                   shadowColor: colors.text,
                 },
               ]}
             >
-              <Text style={[styles.modalTitle, { color: colors.text }]}>
-                Crie um Novo Produto
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Escolha uma Imagem do Produto
               </Text>
-
-              <View style={[styles.inputs]}>
-                <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      color: colors.text,
-                      backgroundColor: colors.background,
-                      borderColor: colors.border,
-                    },
-                  ]}
-                  placeholder="Nome do Produto"
-                  placeholderTextColor="#999"
-                  value={product.name || ""}
-                  onChangeText={(text) => handleChange("name", text)}
-                  autoCapitalize="words"
-                />
-                <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      color: colors.text,
-                      backgroundColor: colors.background,
-                      borderColor: colors.border,
-                    },
-                  ]}
-                  multiline
-                  numberOfLines={3}
-                  placeholder="Descrição do Produto"
-                  placeholderTextColor="#999"
-                  value={product.description || ""}
-                  onChangeText={(text) => handleChange("description", text)}
-                />
-                <View
-                  style={{
-                    flexDirection: "row",
-                    gap: 16,
-                  }}
-                >
-                  <TextInput
-                    style={[
-                      styles.input,
-                      {
-                        color: colors.text,
-                        backgroundColor: colors.background,
-                        borderColor: colors.border,
-                        textAlign: "center",
-                        width: 200,
-                      },
-                    ]}
-                    placeholder="Preço"
-                    placeholderTextColor="#999"
-                    value={product.price !== null ? String(product.price) : ""}
-                    onChangeText={(text) =>
-                      handleChange("price", parseFloat(text) || null)
-                    }
-                    keyboardType="numeric"
-                  />
-                  <TextInput
-                    style={[
-                      styles.input,
-                      {
-                        color: colors.text,
-                        backgroundColor: colors.background,
-                        borderColor: colors.border,
-                      },
-                    ]}
-                    placeholder="Quantidade"
-                    placeholderTextColor="#999"
-                    value={
-                      product.amount !== null ? String(product.amount) : ""
-                    }
-                    onChangeText={(text) =>
-                      handleChange("amount", parseInt(text) || null)
-                    }
-                    keyboardType="numeric"
-                  />
-                </View>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    width: "100%",
-                    gap: 16,
-                  }}
-                >
-                  <View
-                    style={[
-                      styles.pickerContainer,
-                      {
-                        borderColor: colors.border,
-                        backgroundColor: colors.background,
-                      },
-                    ]}
-                  >
-                    <Picker
-                      selectedValue={product.category ?? undefined}
-                      onValueChange={(itemValue: Category) =>
-                        handleChange("category", itemValue)
-                      }
-                      style={{ color: colors.text }}
-                      itemStyle={{ color: colors.text }} // Estilo para os itens no Android
-                    >
-                      <Picker.Item
-                        label="Categoria"
-                        value={null}
-                        enabled={false}
-                        style={{ color: "#999" }}
-                      />
-                      {[
-                        "Frutas",
-                        "Verduras",
-                        "Legumes",
-                        "Temperos",
-                        "Graos",
-                        "Organicos",
-                        "Laticinios",
-                        "Ovos",
-                        "Ervas",
-                        "Outros",
-                      ].map((category) => (
-                        <Picker.Item
-                          key={category}
-                          label={category.toUpperCase()}
-                          value={category}
-                        />
-                      ))}
-                    </Picker>
-                  </View>
-
-                  <View
-                    style={[
-                      styles.pickerContainer,
-                      {
-                        borderColor: colors.border,
-                        backgroundColor: colors.background,
-                      },
-                    ]}
-                  >
-                    <Picker
-                      selectedValue={product.measure ?? undefined}
-                      onValueChange={(itemValue: Measure) =>
-                        handleChange("measure", itemValue)
-                      }
-                      style={{ color: colors.text }}
-                      itemStyle={{ color: colors.text }} // Estilo para os itens no Android
-                    >
-                      <Picker.Item
-                        label="Medida"
-                        value={null}
-                        enabled={false}
-                        style={{ color: "#999" }}
-                      />
-                      {[
-                        "kilograma (kg)",
-                        "grama (g)",
-                        "unidade",
-                        "cacho",
-                        "maca",
-                        "bandeja",
-                        "duzia",
-                        "pacote",
-                        "litro (l)",
-                        "mililitros (ml)",
-                      ].map((measure) => (
-                        <Picker.Item
-                          key={measure}
-                          label={measure.toUpperCase()}
-                          value={measure}
-                        />
-                      ))}
-                    </Picker>
-                  </View>
-                </View>
-              </View>
-              <View
-                style={[
-                  styles.section,
-                  {
-                    backgroundColor: colors.background,
-                    shadowColor: colors.text,
-                  },
-                ]}
-              >
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                  Escolha uma Imagem do Produto
-                </Text>
-
-                <View style={styles.buttonContainer}>
-                  <TouchableOpacity
-                    style={[
-                      styles.pickerButton,
-                      {
-                        backgroundColor: colors.primary,
-                        shadowColor: colors.text,
-                      },
-                    ]}
-                    onPress={pickImage}
-                  >
-                    <FontAwesome name="image" size={24} color={colors.nav} />
-                    <Text
-                      style={[styles.pickerButtonText, { color: colors.nav }]}
-                    >
-                      Escolha da galeria
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.pickerButton,
-                      {
-                        backgroundColor: colors.primary,
-                        shadowColor: colors.text,
-                      },
-                    ]}
-                    onPress={takePhoto}
-                  >
-                    <FontAwesome name="camera" size={24} color={colors.nav} />
-                    <Text
-                      style={[styles.pickerButtonText, { color: colors.nav }]}
-                    >
-                      Tire a Foto
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                {imageUri ? (
-                  <Image
-                    source={{ uri: imageUri }}
-                    style={styles.previewImage}
-                  />
-                ) : (
-                  <Text style={styles.noImageText}>
-                    Nenhuma imagem selecionada!
-                  </Text>
-                )}
-              </View>
 
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
-                  style={[styles.modalButton, styles.cancelButton]}
-                  onPress={() => {
-                    setModalVisible(false);
-                    setProduct({
-                      name: "",
-                      description: "",
-                      price: null,
-                      amount: null,
-                      available: true,
-                      seller: user?.id ?? null,
-                      category: null,
-                      measure: null,
-                    });
-                  }}
+                  style={[
+                    styles.pickerButton,
+                    {
+                      backgroundColor: colors.primary,
+                      shadowColor: colors.text,
+                    },
+                  ]}
+                  onPress={pickImage}
                 >
-                  <Text style={[styles.buttonText, { color: colors.text }]}>
-                    Cancelar
+                  <FontAwesome name="image" size={24} color={colors.nav} />
+                  <Text
+                    style={[styles.pickerButtonText, { color: colors.nav }]}
+                  >
+                    Galeria
                   </Text>
                 </TouchableOpacity>
-
                 <TouchableOpacity
-                  style={[styles.modalButton, styles.saveButton]}
-                  onPress={handleAddProduct}
+                  style={[
+                    styles.pickerButton,
+                    {
+                      backgroundColor: colors.primary,
+                      shadowColor: colors.text,
+                    },
+                  ]}
+                  onPress={takePhoto}
                 >
-                  <Text style={[styles.buttonText, { color: colors.text }]}>
-                    Criar Produto
+                  <FontAwesome name="camera" size={24} color={colors.nav} />
+                  <Text
+                    style={[styles.pickerButtonText, { color: colors.nav }]}
+                  >
+                    Tire a Foto
                   </Text>
                 </TouchableOpacity>
               </View>
+
+              {product.image ? (
+                <Image
+                  source={{ uri: product.image }}
+                  style={styles.previewImage}
+                />
+              ) : (
+                <Text style={styles.noImageText}>
+                  Nenhuma imagem selecionada!
+                </Text>
+              )}
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </Modal>
-    </SafeAreaView>
+
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[styles.cancelButton]}
+                disabled={isloading}
+                onPress={() => {
+                  setModalVisible(false);
+                  setIndex(0);
+                  setProduct({
+                    name: "",
+                    description: "",
+                    price: null,
+                    amount: null,
+                    available: true,
+                    seller: user?.id ?? null,
+                    category: null,
+                    measure: null,
+                    image: null,
+                  });
+                }}
+              >
+                <Text style={[styles.buttonText, { color: colors.text }]}>
+                  {isloading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text style={styles.buttonText}>Cancelar</Text>
+                  )}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.saveButton]}
+                disabled={isloading}
+                onPress={() => {
+                  if (type === "add") {
+                    handleAddProduct();
+                  } else {
+                    handleUpdateProduct();
+                  }
+                }}
+              >
+                <Text style={[styles.buttonText, { color: colors.text }]}>
+                  {isloading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text style={styles.buttonText}>
+                      {type === "add" ? "Criar Produto" : "Atualizar Produto"}
+                    </Text>
+                  )}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 }
 
@@ -532,13 +756,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 16,
   },
-  scrollContent: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
   wrapper: {
     justifyContent: "space-between",
     marginBottom: 21,
+  },
+  image: {
+    width: 60,
+    height: 60,
+    aspectRatio: 1,
+    borderColor: "#eee",
+    borderRadius: 16,
   },
   items: {
     gap: 17,
@@ -551,6 +778,7 @@ const styles = StyleSheet.create({
   },
   centeredView: {
     flex: 1,
+    width: "100%",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background overlay
@@ -558,7 +786,7 @@ const styles = StyleSheet.create({
   modalView: {
     borderRadius: 20,
     marginTop: 16,
-    padding: 35,
+    padding: 25,
     alignItems: "center",
     gap: 50,
     shadowOffset: {
@@ -568,12 +796,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    width: "100%",
-    maxWidth: 900,
+  },
+
+  scrollContent: {
+    width: "90%",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalTitle: {
     fontSize: 22,
     fontWeight: "bold",
+    paddingTop: 15,
   },
   inputs: {
     width: "100%",
@@ -599,7 +832,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 10,
     borderWidth: 1,
-    padding: 15,
+    padding: 20,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 5,
@@ -612,20 +845,28 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   buttonContainer: {
-    width: "85%",
-    justifyContent: "center",
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
     gap: 20,
   },
   modalButton: {
-    height: 50,
     borderRadius: 10,
     justifyContent: "center",
   },
   cancelButton: {
     backgroundColor: "#dc3545",
+    borderRadius: 10,
+    paddingHorizontal: 25,
+    paddingVertical: 15,
+    justifyContent: "center",
   },
   saveButton: {
     backgroundColor: "#28a745",
+    borderRadius: 10,
+    paddingHorizontal: 25,
+    paddingVertical: 15,
+    justifyContent: "center",
   },
   buttonText: {
     fontWeight: "bold",
@@ -661,12 +902,5 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: "#888",
     fontStyle: "italic",
-  },
-  image: {
-    width: 60,
-    height: 60,
-    aspectRatio: 1,
-    borderColor: "#eee",
-    borderRadius: 16,
   },
 });

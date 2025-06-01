@@ -9,12 +9,9 @@ import {
 } from "react-native";
 import { supabase } from "../lib/supabase";
 import { useTheme } from "../hooks/useTheme";
-import { useNavigation, Link } from "expo-router";
-import { Button } from "@react-navigation/elements";
+import { Link } from "expo-router";
 
 export default function Auth() {
-  const navigation = useNavigation();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
