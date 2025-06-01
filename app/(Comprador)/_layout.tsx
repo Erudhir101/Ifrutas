@@ -3,9 +3,12 @@ import "react-native-reanimated";
 import { View, StyleSheet } from "react-native";
 import { Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function LayoutComprador() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
+
   return (
     <View style={styles.container}>
       <Tabs
@@ -14,11 +17,12 @@ export default function LayoutComprador() {
           tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: colors.text,
           tabBarStyle: {
-            height: 60,
+            height: 60 + insets.bottom,
             backgroundColor: colors.nav,
             borderTopColor: colors.text,
             borderTopWidth: 0.5,
             paddingVertical: 5,
+            paddingBottom: insets.bottom,
           },
           headerShown: false,
         }}
