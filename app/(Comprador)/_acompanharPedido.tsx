@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/hooks/useTheme";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 const steps = [
   "Realizando pedido",
@@ -20,7 +20,7 @@ const steps = [
 ];
 
 export default function AcompanharPedido() {
-  const id = "XPTO-678";
+  const { id } = useLocalSearchParams(); // Captura o ID da compra
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const router = useRouter();
@@ -146,7 +146,7 @@ export default function AcompanharPedido() {
           Código do pedido
         </Text>
         <Text style={[styles.code, { color: colors.primary }]}>
-          {id}
+          {id} {/* Exibe o ID da compra */}
         </Text>
       </ScrollView>
     </SafeAreaView>

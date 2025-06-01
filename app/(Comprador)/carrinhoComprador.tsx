@@ -10,6 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/hooks/useTheme";
 import { useEffect, useState } from "react";
 import SearchInput from "@/components/SearchInput";
+import { useAuth } from "@/hooks/AuthContext"; // Importe o hook de autenticação
 
 const initialItems = [
   { id: "1", value: 23, name: "Apple", category: "Fruit" },
@@ -25,6 +26,7 @@ const initialItems = [
 export default function CarrinhoComprador() {
   const router = useRouter(); // adicione esta linha
   const { colors } = useTheme();
+  const { user } = useAuth(); // Obtenha as informações do usuário
   const [filteredItems, setFilteredItems] = useState(initialItems);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -108,7 +110,14 @@ export default function CarrinhoComprador() {
           </Text>
           <Text style={{ color: colors.textSecondary }}>Endereço</Text>
           <TouchableOpacity
-            onPress={() => router.push("_acompanharPedido")} // Redireciona corretamente
+            onPress={() => {
+              const userId = user?.id || "GUEST"; // Use o ID do usuário ou "GUEST" como fallback
+              const orderId = `${userId}-${Date.now()}`; // Combina o ID do usuário com o timestamp
+              router.push({
+                pathname: "_acompanharPedido", // Nome da rota
+                params: { id: orderId }, // Passa o ID como parâmetro
+              });
+            }}
             style={{
               backgroundColor: colors.primary,
               borderRadius: 8,
