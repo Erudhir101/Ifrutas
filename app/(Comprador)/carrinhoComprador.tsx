@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router"; // adicione esta linha
 import {
   FlatList,
   StyleSheet,
@@ -9,6 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/hooks/useTheme";
 import { useEffect, useState } from "react";
 import SearchInput from "@/components/SearchInput";
+import { useAuth } from "@/hooks/AuthContext"; // Importe o hook de autenticação
 
 const initialItems = [
   { id: "1", value: 23, name: "Apple", category: "Fruit" },
@@ -22,9 +24,10 @@ const initialItems = [
 ];
 
 export default function CarrinhoComprador() {
-  // State to hold the currently displayed (filtered) items
+  const router = useRouter(); // adicione esta linha
+  const { colors } = useTheme();
+  const { user } = useAuth(); // Obtenha as informações do usuário
   const [filteredItems, setFilteredItems] = useState(initialItems);
-  // State to hold the current search query
   const [searchQuery, setSearchQuery] = useState("");
 
   // useEffect to perform filtering whenever searchQuery changes
@@ -83,7 +86,8 @@ export default function CarrinhoComprador() {
     </View>
   );
 
-  const { colors } = useTheme();
+  const total = initialItems.reduce((acc, curr) => acc + curr.value, 0);
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -102,10 +106,18 @@ export default function CarrinhoComprador() {
           <Text
             style={{ color: colors.text, fontSize: 20, fontWeight: "bold" }}
           >
-            Total R$ {initialItems.reduce((acc, curr) => acc + curr.value, 0)}
+            Total R$ {total}
           </Text>
-          <Text>Endereço</Text>
+          <Text style={{ color: colors.textSecondary }}>Endereço</Text>
           <TouchableOpacity
+            onPress={() => {
+              const userId = user?.id || "GUEST"; // Use o ID do usuário ou "GUEST" como fallback
+              const orderId = `${userId}-${Date.now()}`; // Combina o ID do usuário com o timestamp
+              router.push({
+                pathname: "_acompanharPedido", // Nome da rota
+                params: { id: orderId }, // Passa o ID como parâmetro
+              });
+            }}
             style={{
               backgroundColor: colors.primary,
               borderRadius: 8,
@@ -118,7 +130,7 @@ export default function CarrinhoComprador() {
               style={{
                 textAlign: "center",
                 color: colors.nav,
-                fontWeight: "semibold",
+                fontWeight: "600",
               }}
             >
               Comprar
