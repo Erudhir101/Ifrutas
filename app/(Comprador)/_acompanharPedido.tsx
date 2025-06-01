@@ -20,15 +20,22 @@ const steps = [
 ];
 
 export default function AcompanharPedido() {
-  const id  = "XPTO-678";
+  const id = "XPTO-678";
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const router = useRouter();
-  const currentStep = 1; // índice do passo atual (0-based)
+  const currentStep = 2; // índice do passo atual (0-based)
+  const trackStepIndex = steps.indexOf("O entregador está indo até você!");
 
   return (
     <SafeAreaView
-      style={[styles.container, { paddingBottom: insets.bottom + 16 }]}
+      style={[
+        styles.container,
+        {
+          paddingBottom: insets.bottom + 16,
+          paddingTop: insets.top,
+        },
+      ]}
     >
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.title, { color: colors.text }]}>
@@ -86,13 +93,34 @@ export default function AcompanharPedido() {
                   </Text>
                   {label === "O entregador está indo até você!" && (
                     <TouchableOpacity
-                      style={[styles.trackButton, { borderColor: colors.primary }]}
+                      style={[
+                        styles.trackButton,
+                        {
+                          borderColor: currentStep >= trackStepIndex
+                            ? colors.primary
+                            : colors.textSecondary,
+                          backgroundColor: currentStep >= trackStepIndex
+                            ? "transparent"
+                            : "#f0f0f0",
+                        },
+                      ]}
                       onPress={() => {
-                        // Aqui pode redirecionar para uma tela de tracking do entregador, por exemplo:
-                        router.push("trackingEntregador");
+                        if (currentStep >= trackStepIndex) {
+                          router.push("trackingEntregador");
+                        }
                       }}
+                      disabled={currentStep < trackStepIndex}
                     >
-                      <Text style={[styles.trackButtonText, { color: colors.primary }]}>
+                      <Text
+                        style={[
+                          styles.trackButtonText,
+                          {
+                            color: currentStep >= trackStepIndex
+                              ? colors.primary
+                              : colors.textSecondary,
+                          },
+                        ]}
+                      >
                         acompanhe o entregador
                       </Text>
                     </TouchableOpacity>

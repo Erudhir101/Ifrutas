@@ -108,7 +108,7 @@ export default function CarrinhoComprador() {
           </Text>
           <Text style={{ color: colors.textSecondary }}>Endereço</Text>
           <TouchableOpacity
-            onPress={() => router.push("acompanharPedido")} // Redireciona corretamente
+            onPress={() => router.push("_acompanharPedido")} // Redireciona corretamente
             style={{
               backgroundColor: colors.primary,
               borderRadius: 8,
