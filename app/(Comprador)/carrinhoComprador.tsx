@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router"; // adicione esta linha
 import {
   FlatList,
   StyleSheet,
@@ -22,9 +23,9 @@ const initialItems = [
 ];
 
 export default function CarrinhoComprador() {
-  // State to hold the currently displayed (filtered) items
+  const router = useRouter(); // adicione esta linha
+  const { colors } = useTheme();
   const [filteredItems, setFilteredItems] = useState(initialItems);
-  // State to hold the current search query
   const [searchQuery, setSearchQuery] = useState("");
 
   // useEffect to perform filtering whenever searchQuery changes
@@ -83,7 +84,8 @@ export default function CarrinhoComprador() {
     </View>
   );
 
-  const { colors } = useTheme();
+  const total = initialItems.reduce((acc, curr) => acc + curr.value, 0);
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -102,10 +104,11 @@ export default function CarrinhoComprador() {
           <Text
             style={{ color: colors.text, fontSize: 20, fontWeight: "bold" }}
           >
-            Total R$ {initialItems.reduce((acc, curr) => acc + curr.value, 0)}
+            Total R$ {total}
           </Text>
-          <Text>Endereço</Text>
+          <Text style={{ color: colors.textSecondary }}>Endereço</Text>
           <TouchableOpacity
+            onPress={() => router.push("acompanharPedido")} // Redireciona corretamente
             style={{
               backgroundColor: colors.primary,
               borderRadius: 8,
@@ -118,7 +121,7 @@ export default function CarrinhoComprador() {
               style={{
                 textAlign: "center",
                 color: colors.nav,
-                fontWeight: "semibold",
+                fontWeight: "600",
               }}
             >
               Comprar

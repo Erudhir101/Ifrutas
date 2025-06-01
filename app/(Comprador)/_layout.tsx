@@ -27,6 +27,7 @@ export default function LayoutComprador() {
           headerShown: false,
         }}
       >
+        {/* Apenas as rotas desejadas */}
         <Tabs.Screen
           name="homeComprador"
           options={{
