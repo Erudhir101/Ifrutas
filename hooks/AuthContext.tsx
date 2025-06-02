@@ -132,35 +132,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error("ID do usuário não encontrado após o registro.");
       }
 
-      const { data: existingProfile } = await supabase
+      const { error: profileError } = await supabase
         .from("profiles")
-        .select("id")
-        .eq("id", userId)
-        .single();
+        .update({
+          user_type: userType,
+          full_name: fullName,
+          endereco: endereco,
+          telefone: telefone,
+        })
+        .eq("id", userId);
 
-      if (!existingProfile) {
-        const { data: profileInsertData, error: profileError } = await supabase
-          .from("profiles")
-          .insert({
-            id: userId,
-            user_type: userType,
-            full_name: fullName,
-            endereco: endereco,
-            telefone: telefone,
-          })
-          .select()
-          .single();
-
-        if (profileError) {
-          console.error("Erro ao criar perfil:", profileError);
-          throw profileError;
-        }
-
-        // The onAuthStateChange listener will now trigger and fetch this profile,
-        // so no need to setUser here directly after insertion.
-        // if (profileInsertData) {
-        //   setUser(profileInsertData);
-        // }
+      if (profileError) {
+        console.error("Erro ao criar perfil:", profileError);
+        throw profileError;
       }
     } catch (error: any) {
       console.error("Erro em signUp:", error.message);

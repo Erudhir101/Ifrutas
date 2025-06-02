@@ -23,7 +23,6 @@ export default function Passo4Screen() {
       Alert.alert("Erro", "Por favor, preencha endereço e telefone.");
       return;
     }
-
     setLoading(true);
     try {
       await signUp(
