@@ -1,169 +1,153 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase, Tracking } from "../lib/supabase";
 
-interface TrackingContextType {
-  trackings: Tracking[]; // Lista de rastreios
-  isLoading: boolean; // Indica se os dados estão sendo carregados
-  fetchTrackings: () => Promise<void>; // Buscar todos os rastreios
-  getTrackingInfo: (trackingId: string) => Promise<Tracking | null>; // Obter informações detalhadas de um rastreio
+let globalState: {
+  trackings: Tracking[];
+  isLoading: boolean;
+  fetchTrackings: () => Promise<void>;
+  getTrackingInfo: (trackingId: string) => Promise<Tracking | null>;
   createTracking: (
     purchaseId: string,
     deliveryPersonId: string,
     estimatedTime: string
-  ) => Promise<Tracking | null>; // Criar um novo rastreio
+  ) => Promise<Tracking | null>;
   updateTracking: (
     trackingId: string,
     updates: Partial<Tracking>
-  ) => Promise<void>; // Atualizar um rastreio
-}
-
-const TrackingContext = createContext<TrackingContextType | undefined>(
-  undefined
-);
+  ) => Promise<void>;
+} | null = null;
 
 export function useTracking() {
-  const context = useContext(TrackingContext);
-  if (!context) {
-    throw new Error(
-      "useTracking deve ser usado dentro de um TrackingProvider"
-    );
-  }
-  return context;
-}
+  if (!globalState) {
+    const trackings: Tracking[] = [];
+    let isLoading = true;
 
-export function TrackingProvider({ children }: { children: React.ReactNode }) {
-  const [trackings, setTrackings] = useState<Tracking[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // Função para buscar todos os rastreios
-  const fetchTrackings = async () => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("tracking")
-        .select(`
-          *,
-          purchase:purchase_id (
+    // Função para buscar todos os rastreios
+    const fetchTrackings = async () => {
+      isLoading = true;
+      try {
+        const { data, error } = await supabase
+          .from("tracking")
+          .select(`
             *,
-            store:store_id (
+            purchase:purchase_id (
+              *,
+              store:store_id (
+                id,
+                name,
+                endereco,
+                telefone
+              )
+            ),
+            delivery_person:delivery_person_id (
               id,
-              name,
-              endereco,
+              full_name,
               telefone
             )
-          ),
-          delivery_person:delivery_person_id (
-            id,
-            full_name,
-            telefone
-          )
-        `);
+          `);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      setTrackings(data);
-    } catch (error: any) {
-      console.error("Erro ao buscar rastreios:", error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        trackings.splice(0, trackings.length, ...data);
+      } catch (error: any) {
+        console.error("Erro ao buscar rastreios:", error.message);
+      } finally {
+        isLoading = false;
+      }
+    };
 
-  // Função para obter informações detalhadas de um rastreio
-  const getTrackingInfo = async (trackingId: string): Promise<Tracking | null> => {
-    try {
-      const { data, error } = await supabase
-        .from("tracking")
-        .select(`
-          *,
-          purchase:purchase_id (
+    // Função para obter informações detalhadas de um rastreio
+    const getTrackingInfo = async (
+      trackingId: string
+    ): Promise<Tracking | null> => {
+      try {
+        const { data, error } = await supabase
+          .from("tracking")
+          .select(`
             *,
-            store:store_id (
+            purchase:purchase_id (
+              *,
+              store:store_id (
+                id,
+                name,
+                endereco,
+                telefone
+              )
+            ),
+            delivery_person:delivery_person_id (
               id,
-              name,
-              endereco,
+              full_name,
               telefone
             )
-          ),
-          delivery_person:delivery_person_id (
-            id,
-            full_name,
-            telefone
-          )
-        `)
-        .eq("id", trackingId)
-        .single();
+          `)
+          .eq("id", trackingId)
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      return data;
-    } catch (error: any) {
-      console.error("Erro ao buscar informações de rastreio:", error.message);
-      return null;
-    }
-  };
+        return data;
+      } catch (error: any) {
+        console.error("Erro ao buscar informações de rastreio:", error.message);
+        return null;
+      }
+    };
 
-  // Função para criar um novo rastreio
-  const createTracking = async (
-    purchaseId: string,
-    deliveryPersonId: string,
-    estimatedTime: string
-  ): Promise<Tracking | null> => {
-    try {
-      const { data, error } = await supabase
-        .from("tracking")
-        .insert({
-          purchase_id: purchaseId,
-          delivery_person_id: deliveryPersonId,
-          estimated_time: estimatedTime,
-        })
-        .single();
+    // Função para criar um novo rastreio
+    const createTracking = async (
+      purchaseId: string,
+      deliveryPersonId: string,
+      estimatedTime: string
+    ): Promise<Tracking | null> => {
+      try {
+        const { data, error } = await supabase
+          .from("tracking")
+          .insert({
+            purchase_id: purchaseId,
+            delivery_person_id: deliveryPersonId,
+            estimated_time: estimatedTime,
+          })
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      await fetchTrackings(); // Atualiza a lista de rastreios
-      return data;
-    } catch (error: any) {
-      console.error("Erro ao criar rastreio:", error.message);
-      return null;
-    }
-  };
+        await fetchTrackings(); // Atualiza a lista de rastreios
+        return data;
+      } catch (error: any) {
+        console.error("Erro ao criar rastreio:", error.message);
+        return null;
+      }
+    };
 
-  // Função para atualizar um rastreio
-  const updateTracking = async (
-    trackingId: string,
-    updates: Partial<Tracking>
-  ) => {
-    try {
-      const { error } = await supabase
-        .from("tracking")
-        .update(updates)
-        .eq("id", trackingId);
+    // Função para atualizar um rastreio
+    const updateTracking = async (
+      trackingId: string,
+      updates: Partial<Tracking>
+    ) => {
+      try {
+        const { error } = await supabase
+          .from("tracking")
+          .update(updates)
+          .eq("id", trackingId);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      await fetchTrackings(); // Atualiza a lista de rastreios
-    } catch (error: any) {
-      console.error("Erro ao atualizar rastreio:", error.message);
-    }
-  };
+        await fetchTrackings(); // Atualiza a lista de rastreios
+      } catch (error: any) {
+        console.error("Erro ao atualizar rastreio:", error.message);
+      }
+    };
 
-  useEffect(() => {
+    globalState = {
+      trackings,
+      isLoading,
+      fetchTrackings,
+      getTrackingInfo,
+      createTracking,
+      updateTracking,
+    };
+
+    // Carrega os rastreios na inicialização
     fetchTrackings();
-  }, []);
+  }
 
-  const value = {
-    trackings,
-    isLoading,
-    fetchTrackings,
-    getTrackingInfo,
-    createTracking,
-    updateTracking,
-  };
-
-  return (
-    <TrackingContext.Provider value={value}>
-      {children}
-    </TrackingContext.Provider>
-  );
+  return globalState;
 }
