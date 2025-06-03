@@ -108,12 +108,22 @@ export interface Database {
         Insert: Omit<Product, "id">;
         Update: Partial<Omit<Product, "id">>;
       };
-
       vehicles: {
         Row: Vehicle;
         Insert: Omit<Vehicle, "id">;
         Update: Partial<Omit<Vehicle, "id">>;
       };
+      purchases: {
+        Row: Purchase;
+        Insert: Omit<Purchase, "id" | "store" | "buyer" | "products">; // Ajuste conforme sua lógica
+        Update: Partial<Omit<Purchase, "id" | "store" | "buyer" | "products">>;
+      };
+      tracking: {
+        Row: Tracking;
+        Insert: Omit<Tracking, "id">;
+        Update: Partial<Omit<Tracking, "id">>;
+      };
+      // Adicione purchase_products se quiser tipar também
     };
   };
 }
