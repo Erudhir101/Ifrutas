@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker } from "react-native-maps";
+import { useRouter } from "expo-router";
 
 const categories = ["Frutas", "Vegetais", "Orgânicos"];
 const screenWidth = Dimensions.get("window").width; // Obtém a largura da tela
@@ -21,6 +22,7 @@ export default function HomeComprador() {
   const { user } = useAuth();
   const { colors } = useTheme();
   const { products, isLoading } = useProduct();
+  const router = useRouter(); // Substitui o useNavigation
 
   return (
     <SafeAreaView
@@ -53,7 +55,13 @@ export default function HomeComprador() {
           </View>
 
           {/* Lojas */}
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Lojas</Text>
+          <TouchableOpacity
+            onPress={() => router.push("/listarLojas")} // Navega para a tela /listarLojas
+          >
+            <Text style={[styles.sectionTitle, { color: colors.primary }]}>
+              Lojas
+            </Text>
+          </TouchableOpacity>
           <View style={styles.stores}>
             <TouchableOpacity style={styles.storeCard}>
               <Text style={styles.storeTitle}>Mais Vendidos</Text>
