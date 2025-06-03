@@ -24,7 +24,7 @@ export default function AcompanharPedido() {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const router = useRouter();
-  const currentStep = 2; // índice do passo atual (0-based)
+  const currentStep = 3; // índice do passo atual (0-based)
   const trackStepIndex = steps.indexOf("O entregador está indo até você!");
 
   return (
@@ -106,7 +106,7 @@ export default function AcompanharPedido() {
                       ]}
                       onPress={() => {
                         if (currentStep >= trackStepIndex) {
-                          router.push("trackingEntregador");
+                          router.push("/trackingEntregador"); // Atualize o caminho da rota
                         }
                       }}
                       disabled={currentStep < trackStepIndex}

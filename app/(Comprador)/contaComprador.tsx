@@ -13,6 +13,7 @@ import DarkMode from "@/components/DarkMode";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { v4 as uuidv4 } from "uuid";
 
 function formatPhoneNumber(phone) {
   if (!phone) return "";
@@ -94,7 +95,17 @@ export default function ContaComprador() {
           </Text>
           <Feather name="chevron-right" size={20} color={colors.textSecondary} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.option}>
+        <TouchableOpacity
+          style={styles.option}
+          onPress={() => {
+            const userId = user?.id || "GUEST"; // Use o ID do usuário ou "GUEST" como fallback
+            const trackingId = `${userId}-${Date.now()}`; // Combina o ID do usuário com o timestamp
+            router.push({
+              pathname: "/acompanharPedido",
+              params: { id: trackingId }, // Passa o ID como parâmetro
+            });
+          }}
+        >
           <Feather name="shopping-cart" size={20} color={colors.text} />
           <Text style={[styles.optionText, { color: colors.text }]}>
             Meus Pedidos

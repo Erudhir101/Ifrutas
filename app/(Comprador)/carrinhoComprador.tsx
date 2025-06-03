@@ -114,7 +114,7 @@ export default function CarrinhoComprador() {
               const userId = user?.id || "GUEST"; // Use o ID do usuário ou "GUEST" como fallback
               const orderId = `${userId}-${Date.now()}`; // Combina o ID do usuário com o timestamp
               router.push({
-                pathname: "_acompanharPedido", // Nome da rota
+                pathname: "/acompanharPedido", // Atualize o caminho da rota para o novo nome correto
                 params: { id: orderId }, // Passa o ID como parâmetro
               });
             }}
