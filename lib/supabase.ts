@@ -177,20 +177,8 @@ CREATE TABLE IF NOT EXISTS purchases (
 CREATE TABLE IF NOT EXISTS purchase_products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   purchase_id UUID REFERENCES purchases (id) ON DELETE CASCADE,
-  product_id UUID REFERENCES product (id) ON DELETE CASCADE,
+  product_id bigint REFERENCES products (id) ON DELETE CASCADE,
   quantity INT NOT NULL
-);
-
--- Tabela tracking (rastreio de entregas)
-CREATE TABLE IF NOT EXISTS tracking (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  purchase_id UUID REFERENCES purchases (id) ON DELETE CASCADE,
-  delivery_person_id UUID REFERENCES profiles (id) ON DELETE SET NULL,
-  status TEXT CHECK (status IN ('pendente', 'em_transito', 'entregue', 'cancelada')),
-  last_location GEOGRAPHY(Point,4326),
-  estimated_time INTERVAL,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
 );
 
 -- Tabela tracking
