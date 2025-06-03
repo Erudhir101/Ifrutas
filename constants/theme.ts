@@ -16,21 +16,21 @@ export type Themes = {
 
 export const themes: Themes = {
   light: {
-    background: "#FFFFFF",
-    text: "#000000",
-    primary: "#007AFF",
-    secondary: "#5856D6",
+    background: "#FAFAFA",
     border: "#E5E5EA",
     card: "#F2F2F7",
-    nav: "#FAFAFA",
+    nav: "#FFFFFF",
+    primary: "#007AFF",
+    secondary: "#5856D6",
+    text: "#000000",
   },
   dark: {
-    background: "#000000",
-    text: "#FFFFFF",
-    primary: "#0A84FF",
-    secondary: "#5E5CE6",
+    background: "#101010",
     border: "#38383A",
     card: "#1C1C1E",
-    nav: "#101010",
+    nav: "#000000",
+    primary: "#0A84FF",
+    secondary: "#5E5CE6",
+    text: "#FFFFFF",
   },
 };

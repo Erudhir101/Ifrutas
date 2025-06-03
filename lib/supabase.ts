@@ -1,6 +1,7 @@
 import "react-native-url-polyfill/auto";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
+import { Vehicle } from "./vehicle";
 
 const supabaseUrl = process.env.EXPO_PUBLIC_API_URL || "";
 const supabaseAnonKey = process.env.EXPO_PUBLIC_API_ANONKEY || "";
@@ -102,10 +103,16 @@ export interface Database {
         Insert: Omit<UserProfile, "id">;
         Update: Partial<Omit<UserProfile, "id">>;
       };
-      product: {
+      products: {
         Row: Product;
         Insert: Omit<Product, "id">;
         Update: Partial<Omit<Product, "id">>;
+      };
+
+      vehicles: {
+        Row: Vehicle;
+        Insert: Omit<Vehicle, "id">;
+        Update: Partial<Omit<Vehicle, "id">>;
       };
     };
   };

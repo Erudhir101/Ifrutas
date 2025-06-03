@@ -1,7 +1,12 @@
 import { Stack, Tabs } from "expo-router";
 import "react-native-reanimated";
 import { View, StyleSheet } from "react-native";
-import { Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
+import {
+  Feather,
+  FontAwesome,
+  Ionicons,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
 
 export default function LayoutEntregador() {
@@ -24,7 +29,7 @@ export default function LayoutEntregador() {
         }}
       >
         <Tabs.Screen
-          name="homeComprador"
+          name="homeEntregador"
           options={{
             title: "Home",
             tabBarIcon: ({ color }) => (
@@ -33,16 +38,20 @@ export default function LayoutEntregador() {
           }}
         />
         <Tabs.Screen
-          name="carrinhoComprador"
+          name="entregasEntregador"
           options={{
             title: "Carrinho",
             tabBarIcon: ({ color }) => (
-              <Feather size={28} name="shopping-cart" color={color} />
+              <MaterialCommunityIcons
+                name="truck-fast-outline"
+                size={28}
+                color={color}
+              />
             ),
           }}
         />
         <Tabs.Screen
-          name="chatComprador"
+          name="chatEntregador"
           options={{
             title: "Chat",
             tabBarIcon: ({ color }) => (
@@ -51,7 +60,7 @@ export default function LayoutEntregador() {
           }}
         />
         <Tabs.Screen
-          name="contaComprador"
+          name="contaEntregador"
           options={{
             title: "Opções",
             tabBarIcon: ({ color }) => (

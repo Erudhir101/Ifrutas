@@ -1,10 +1,10 @@
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function homeEntregador() {
+export default function ChatEntregador() {
   return (
     <SafeAreaView style={styles.container}>
-      <Text>entregador</Text>
+      <Text>chat</Text>
     </SafeAreaView>
   );
 }
