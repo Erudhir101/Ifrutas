@@ -7,7 +7,7 @@ import {
   Image,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
+  TouchableOpacity, // Importa TouchableOpacity para botões
   ActivityIndicator,
   Dimensions,
 } from "react-native";
@@ -17,7 +17,7 @@ import Carousel from "@/components/Carousel";
 import { useRouter } from "expo-router";
 
 const categories = ["Frutas", "Vegetais", "Orgânicos"];
-const pages = ["page1", "page2"];
+const pages = ["page1", "page2","page3", "page4", "page5"]; // Exemplo de páginas para o Carousel
 const screenWidth = Dimensions.get("window").width; // Obtém a largura da tela
 const stores = [
   { title: "Mais Vendidos", desc: "Frutas Frescas", badge: "Entrega Grátis" },
