@@ -17,7 +17,7 @@ import Carousel from "@/components/Carousel";
 import { useRouter } from "expo-router";
 
 const categories = ["Frutas", "Vegetais", "Orgânicos"];
-const pages = ["page1", "page2"];
+const pages = ["page1", "page2", "page3", "page4", "page5"];
 const screenWidth = Dimensions.get("window").width; // Obtém a largura da tela
 const stores = [
   { title: "Mais Vendidos", desc: "Frutas Frescas", badge: "Entrega Grátis" },
@@ -170,6 +170,8 @@ export default function HomeComprador() {
               styles.mainButton,
               { backgroundColor: colors.text, borderColor: colors.nav },
             ]}
+
+            onPress={() => router.push("/listarLojas")} // Navega para a tela /listarLojas
           >
             <Text style={{ color: colors.background, fontWeight: "bold" }}>
               Todas as Lojas
