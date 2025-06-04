@@ -28,7 +28,7 @@ function imagePath(image: string) {
   };
 }
 
-async function addImage(imageUri: string) {
+export async function addImage(imageUri: string) {
   const { storage, extension } = imagePath(imageUri);
 
   const fileContent = await FileSystem.readAsStringAsync(imageUri, {
@@ -58,7 +58,7 @@ async function addImage(imageUri: string) {
   return publicUrlData.publicUrl;
 }
 
-async function updateImage(oldImage: string, newImage: string) {
+export async function updateImage(oldImage: string, newImage: string) {
   const { storage, extension } = imagePath(newImage);
 
   const fileContent = await FileSystem.readAsStringAsync(newImage, {

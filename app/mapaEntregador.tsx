@@ -1,8 +1,12 @@
 import React from "react";
 import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import MapView, { Marker, Polyline } from "react-native-maps";
-import { Feather, FontAwesome } from "@expo/vector-icons";
+import MapView, { Callout, Marker, Polyline } from "react-native-maps";
+import {
+  Feather,
+  FontAwesome,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
 
@@ -71,7 +75,7 @@ export default function MapaEntregador() {
               }}
             >
               <View style={styles.btn}>
-                <Text style={styles.btnText}>Help</Text>
+                <Text style={styles.btnText}>Ajuda</Text>
               </View>
             </TouchableOpacity>
 
@@ -89,24 +93,47 @@ export default function MapaEntregador() {
 
       <MapView
         style={styles.map}
+        showsUserLocation
         initialRegion={{
-          latitude: -15.7942,
-          longitude: -47.8822,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
+          latitude: -15.7902,
+          longitude: -47.8802,
+          latitudeDelta: 1,
+          longitudeDelta: 1,
         }}
       >
         {/* Origin */}
-        <Marker coordinate={coordinates[0]}>
+        <Marker
+          anchor={{ x: 0.4, y: 0 }}
+          coordinate={coordinates[0]}
+          title="Entregador"
+        >
           <View style={styles.marker}>
-            <FontAwesome name="shopping-basket" color="#fff" size={15} />
+            <FontAwesome name="motorcycle" color="#fff" size={15} />
           </View>
         </Marker>
 
         {/* Destination */}
-        <Marker coordinate={coordinates[coordinates.length - 1]}>
+        <Marker
+          anchor={{ x: 0.4, y: 0.5 }}
+          coordinate={coordinates[coordinates.length - 1]}
+          title="Sua Casa"
+        >
           <View style={styles.marker}>
             <FontAwesome name="home" color="#fff" size={15} />
+          </View>
+        </Marker>
+
+        <Marker
+          title="frutas"
+          description={"melhores frutas"}
+          coordinate={{ latitude: -15.7902, longitude: -47.8722 }}
+        >
+          <View style={styles.marker}>
+            <MaterialCommunityIcons
+              name="fruit-watermelon"
+              color="#fff"
+              size={20}
+            />
           </View>
         </Marker>
 
@@ -122,7 +149,7 @@ export default function MapaEntregador() {
           <Text style={styles.sheetTitle}>Pedido está chegado</Text>
 
           <Text style={styles.sheetSubtitle}>
-            Arrives in
+            Está à
             <Text style={{ fontWeight: "600", color: "#000" }}>
               {" " +
                 calcularDistanciaHaversine(
@@ -136,7 +163,7 @@ export default function MapaEntregador() {
 
         <View style={styles.sheetSection}>
           <View style={{ marginRight: "auto" }}>
-            <Text style={styles.sectionTitle}>Driver</Text>
+            <Text style={styles.sectionTitle}>Entregador</Text>
 
             <Text style={styles.sectionSubtitle}>John D.</Text>
           </View>
@@ -172,11 +199,9 @@ export default function MapaEntregador() {
 
         <View style={styles.sheetSection}>
           <View style={{ marginRight: "auto" }}>
-            <Text style={styles.sectionTitle}>Restaurant</Text>
+            <Text style={styles.sectionTitle}>Vendedor</Text>
 
-            <Text style={styles.sectionSubtitle}>
-              Old Fashion Burger Restaurant
-            </Text>
+            <Text style={styles.sectionSubtitle}>Vendedor x1</Text>
           </View>
 
           <TouchableOpacity
@@ -216,7 +241,7 @@ export default function MapaEntregador() {
             }}
           >
             <View style={styles.btnEmpty}>
-              <Text style={styles.btnEmptyText}>Cancel</Text>
+              <Text style={styles.btnEmptyText}>Cancelar</Text>
             </View>
           </TouchableOpacity>
         </View>
