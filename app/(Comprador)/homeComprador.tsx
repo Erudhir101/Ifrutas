@@ -117,7 +117,7 @@ export default function HomeComprador() {
                   />
                   <Text style={styles.productName}>{product.name}</Text>
                   <Text style={styles.productPrice}>
-                    R$ {product.price.toFixed(2)}
+                    R$ {Number(product.price ?? 0).toFixed(2)}
                   </Text>
                 </TouchableOpacity>
               ))}
