@@ -52,7 +52,7 @@ export default function CriarProduto() {
   });
 
   const loadProducts = async () => {
-    const fetched = await fetchProducts();
+    const fetched = await fetchProducts(user?.id ?? "");
     setProducts(fetched);
   };
 
@@ -110,8 +110,8 @@ export default function CriarProduto() {
       <FlatList
         data={products}
         renderItem={({ item, index }) => <Item item={item} index={index} />}
-        keyExtractor={(item) => `${item.created_at}`}
-        numColumns={4}
+        keyExtractor={(item) => `${item.id}`}
+        numColumns={3}
         contentContainerStyle={styles.items}
         columnWrapperStyle={styles.wrapper}
       />
@@ -758,7 +758,8 @@ const styles = StyleSheet.create({
   },
   wrapper: {
     justifyContent: "space-between",
-    marginBottom: 21,
+    marginBottom: 20,
+    gap: 30,
   },
   image: {
     width: 60,
@@ -768,12 +769,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   items: {
-    gap: 17,
+    gap: 25,
     paddingVertical: 33,
     paddingHorizontal: 10,
   },
   item: {
-    justifyContent: "center",
+    justifyContent: "space-between",
     alignItems: "center",
   },
   centeredView: {

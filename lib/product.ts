@@ -3,9 +3,12 @@ import * as FileSystem from "expo-file-system";
 import { decode } from "base64-arraybuffer";
 import { Alert } from "react-native";
 
-export async function fetchProducts(): Promise<Product[]> {
+export async function fetchProducts(id: string): Promise<Product[]> {
   try {
-    const { data, error } = await supabase.from("products").select("*");
+    const { data, error } = await supabase
+      .from("products")
+      .select()
+      .eq("seller", id);
 
     if (error) {
       throw error;
