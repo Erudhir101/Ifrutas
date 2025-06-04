@@ -13,10 +13,48 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker } from "react-native-maps";
+import Carousel from "@/components/Carousel";
 import { useRouter } from "expo-router";
 
 const categories = ["Frutas", "Vegetais", "Orgânicos"];
+const pages = ["page1", "page2"];
 const screenWidth = Dimensions.get("window").width; // Obtém a largura da tela
+const stores = [
+  { title: "Mais Vendidos", desc: "Frutas Frescas", badge: "Entrega Grátis" },
+  { title: "Orgânicas", desc: "Vegetais saudáveis", badge: "10% Desconto Hoje" },
+];
+const recommended = [
+  {
+    tag: "Produto novo",
+    title: "Suco de Laranja pra relaxar",
+    subtitle: "Laranjas Gostosas",
+    badge: "Direto da fonte!",
+  },
+  {
+    tag: "Escolhas saudáveis",
+    title: "Maçãs verdes",
+    subtitle: "Maçãs apetitosas",
+    badge: "Pague 3 e Leve 2!",
+  },
+];
+const reviews = [
+  { name: "Alice  ⭐⭐⭐⭐⭐", review: "Belo serviço, o produto é excelente!", rating: 5 },
+  { name: "Bob    ⭐⭐⭐⭐⭐", review: "Melhores frutas e vegetais da região!", rating: 4 },
+];
+const updates = [
+  {
+    title: "Produtos Frescos",
+    desc: "Produtos frescos de alta qualidade",
+    tags: ["Novo", "Oferta"],
+    author: "FreshGreens",
+  },
+  {
+    title: "Vegetais",
+    desc: "Melhores fazendas!",
+    tags: ["Local"],
+    author: "Farm2Table",
+  },
+];
 
 export default function HomeComprador() {
   const { user } = useAuth();
@@ -39,17 +77,18 @@ export default function HomeComprador() {
             {<Text style={{ color: colors.primary }}>{user?.full_name}</Text>}
           </Text>
 
-          {/* Imagem principal */}
-          <View style={styles.banner}>
-            <Text style={{ color: colors.text }}>Imagem</Text>
-          </View>
+          {/* Carousel */}
+          <Carousel pages={pages} />
 
           {/* Categorias */}
           <View style={styles.categories}>
-            {categories.map((category, index) => (
-              <TouchableOpacity key={index} style={styles.categoryCard}>
-                <View style={styles.categoryIcon} />
-                <Text style={{ color: colors.text }}>{category}</Text>
+            {categories.map((item, key) => (
+              <TouchableOpacity
+                key={key}
+                style={[styles.categorie, { borderColor: colors.nav }]}
+              >
+                <View style={styles.categorieImage} />
+                <Text style={{ color: colors.text }}>{item}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -103,26 +142,83 @@ export default function HomeComprador() {
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Produtos Recomendados
           </Text>
-          {isLoading ? (
-            <ActivityIndicator size="large" color={colors.primary} />
-          ) : (
-            <View style={styles.products}>
-              {products.slice(0, 4).map((product) => (
-                <TouchableOpacity key={product.id} style={styles.productCard}>
-                  <Image
-                    source={{
-                      uri: product.image || "https://picsum.photos/200",
-                    }}
-                    style={styles.productImage}
-                  />
-                  <Text style={styles.productName}>{product.name}</Text>
-                  <Text style={styles.productPrice}>
-                    R$ {Number(product.price ?? 0).toFixed(2)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+          <View style={styles.row}>
+            {recommended.map((item, key) => (
+              <View
+                key={key}
+                style={[styles.card, { borderColor: colors.nav }]}
+              >
+                <Image
+                  source={{
+                    uri: products[key]?.image || "https://picsum.photos/200",
+                  }}
+                  style={styles.productImage}
+                />
+                <Text style={styles.cardTag}>{item.tag}</Text>
+                <Text style={styles.cardDesc}>{item.title}</Text>
+                <View style={styles.cardFooter}>
+                  <Text style={styles.cardFooterText}>{item.subtitle}</Text>
+                  <Text style={styles.cardBadge}>{item.badge}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          {/* Botão */}
+          <TouchableOpacity
+            style={[
+              styles.mainButton,
+              { backgroundColor: colors.text, borderColor: colors.nav },
+            ]}
+          >
+            <Text style={{ color: colors.background, fontWeight: "bold" }}>
+              Todas as Lojas
+            </Text>
+          </TouchableOpacity>
+
+          {/* Reviews */}
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Review dos Usuários
+          </Text>
+          <View style={styles.row}>
+            {reviews.map((item, key) => (
+              <View
+                key={key}
+                style={[styles.reviewCard, { borderColor: colors.nav }]}
+              >
+                <Text style={{ fontWeight: "bold", color: colors.text }}>
+                  {item.name}
+                </Text>
+                <Text style={{ color: colors.text }}>{item.review}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Últimas Atualizações */}
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Últimas Atualizações
+          </Text>
+          <View style={styles.row}>
+            {updates.map((item, key) => (
+              <View
+                key={key}
+                style={[styles.card, { borderColor: colors.nav }]}
+              >
+                <Text style={styles.cardTitle}>{item.title}</Text>
+                <Text style={styles.cardDesc}>{item.desc}</Text>
+                <View style={styles.cardFooter}>
+                  <View style={{ flexDirection: "row", gap: 8 }}>
+                    {item.tags.map((tag, i) => (
+                      <Text key={i} style={styles.tag}>
+                        {tag}
+                      </Text>
+                    ))}
+                  </View>
+                  <Text style={styles.cardFooterText}>{item.author}</Text>
+                </View>
+              </View>
+            ))}
+        </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -135,18 +231,18 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 30,
+    paddingVertical: 30, // mantém o maior valor
     paddingHorizontal: 15,
   },
   scroll: {
     flex: 1,
     width: "100%",
     alignItems: "center",
-    gap: 40,
+    gap: 40, // mantém o maior valor
   },
   title: {
     width: "100%",
-    fontSize: 30,
+    fontSize: 30, // mantém o maior valor
     fontWeight: "bold",
     textAlign: "left",
   },
@@ -161,9 +257,25 @@ const styles = StyleSheet.create({
   },
   categories: {
     flexDirection: "row",
-    justifyContent: "space-between",
     width: "100%",
+    justifyContent: "space-between",
+    gap: 12,
     marginBottom: 20,
+  },
+  categorie: {
+    flex: 1,
+    borderRadius: 16,
+    borderWidth: 2,
+    paddingVertical: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  categorieImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#ccc",
   },
   categoryCard: {
     flex: 1,
@@ -184,8 +296,9 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     width: "100%",
-    fontSize: 24,
+    fontSize: 24, // mantém o maior valor
     fontWeight: "bold",
+    textAlign: "left",
     marginVertical: 20,
   },
   stores: {
@@ -218,9 +331,15 @@ const styles = StyleSheet.create({
   },
   map: {
     width: "100%",
-    height: 200,
+    height: 200, // mantém o maior valor
+    backgroundColor: "#eee",
     borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 20,
+  },
+  mapText: {
+    fontWeight: "bold",
   },
   products: {
     flexDirection: "row",
@@ -250,5 +369,66 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 14,
     color: "#888",
+  },
+  // Novos estilos mesclados
+  row: {
+    flexDirection: "row",
+    width: "100%",
+    gap: 12,
+  },
+  card: {
+    flex: 1,
+    borderWidth: 2,
+    borderRadius: 16,
+    padding: 12,
+    gap: 6,
+  },
+  cardTitle: {
+    fontWeight: "bold",
+  },
+  cardDesc: {
+    color: "#555",
+  },
+  cardTag: {
+    backgroundColor: "#eee",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    alignSelf: "flex-start",
+    fontSize: 12,
+  },
+  cardFooter: {
+    flexDirection: "column",
+    justifyContent: "space-between",
+    marginTop: 4,
+    alignItems: "stretch",
+  },
+  cardFooterText: {
+    color: "#555",
+  },
+  cardBadge: {
+    fontWeight: "bold",
+  },
+  mainButton: {
+    width: "100%",
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+  },
+  reviewCard: {
+    flex: 1,
+    borderWidth: 2,
+    borderRadius: 16,
+    padding: 12,
+    gap: 6,
+  },
+  tag: {
+    backgroundColor: "#eee",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    fontSize: 12,
   },
 });
