@@ -40,7 +40,7 @@ export default function LayoutEntregador() {
         <Tabs.Screen
           name="entregasEntregador"
           options={{
-            title: "Carrinho",
+            title: "Entregas",
             tabBarIcon: ({ color }) => (
               <MaterialCommunityIcons
                 name="truck-fast-outline"

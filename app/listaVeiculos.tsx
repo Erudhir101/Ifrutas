@@ -177,8 +177,9 @@ export default function ListaVeiculos() {
       <View
         style={{
           width: "100%",
-          alignSelf: "flex-start",
-          gap: 16,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 30,
           paddingVertical: 25,
           paddingHorizontal: 15,
           backgroundColor: colors.nav,
@@ -468,9 +469,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   title: {
-    fontSize: 35,
+    fontSize: 30,
     fontWeight: "bold",
-    alignSelf: "center",
   },
   listContent: {
     width: "100%",

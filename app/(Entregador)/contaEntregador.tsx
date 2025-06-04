@@ -80,13 +80,15 @@ export default function ContaEntregador() {
       </View>
 
       <View style={[styles.optionsContainer, { backgroundColor: colors.card }]}>
-        <TouchableOpacity style={styles.option}>
-          <Feather name="map-pin" size={20} color={colors.text} />
-          <Text style={[styles.optionText, { color: colors.text }]}>
-            Meu Endereço
-          </Text>
-          <Feather name="chevron-right" size={20} color={colors.text} />
-        </TouchableOpacity>
+        <Link href="/mapaEntregador" asChild>
+          <TouchableOpacity style={styles.option}>
+            <Feather name="map-pin" size={20} color={colors.text} />
+            <Text style={[styles.optionText, { color: colors.text }]}>
+              Meu Endereço
+            </Text>
+            <Feather name="chevron-right" size={20} color={colors.text} />
+          </TouchableOpacity>
+        </Link>
         <TouchableOpacity style={styles.option}>
           <Feather name="dollar-sign" size={20} color={colors.text} />
           <Text style={[styles.optionText, { color: colors.text }]}>
