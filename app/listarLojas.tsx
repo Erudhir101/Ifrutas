@@ -13,6 +13,14 @@ import { useRouter } from "expo-router";
 
 export default function ListaLojas() {
   const router = useRouter();
+  // TODO: Buscar lista de lojas do Supabase e armazenar no estado
+  // Exemplo futuro:
+  // const [lojas, setLojas] = useState<Loja[]>([]);
+  // useEffect(() => {
+  //   fetchLojas().then(setLojas);
+  // }, []);
+
+  // Dados fictícios para exibição temporária
   const lojas = [
     {
       id: 1,
@@ -63,6 +71,7 @@ export default function ListaLojas() {
       </View>
 
       {/* Lista de Lojas */}
+      {/* TODO: Substituir o array 'lojas' por dados vindos do Supabase */}
       <ScrollView showsVerticalScrollIndicator={false}>
         {lojas.map((loja) => (
           <View key={loja.id} style={styles.card}>

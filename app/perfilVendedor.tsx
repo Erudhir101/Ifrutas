@@ -8,12 +8,27 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, Feather, Entypo } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
-export default function PerfilVendedor({ route }: any) {
-    const { id, nome, endereco, distancia } = useLocalSearchParams();
-  
+export default function PerfilVendedor(/* { route }: any */) {
+  // Obtém os parâmetros da URL (id, nome, endereco, distancia)
+  const { id, nome, endereco, distancia } = useLocalSearchParams();
 
+  // TODO: Buscar dados do vendedor no Supabase usando o id recebido acima
+  // Exemplo futuro:
+  // const [vendedor, setVendedor] = useState<Vendedor | null>(null);
+  // useEffect(() => {
+  //   fetchVendedorById(id).then(setVendedor);
+  // }, [id]);
+
+  // TODO: Buscar produtos do vendedor no Supabase usando o id do vendedor
+  // Exemplo futuro:
+  // const [produtos, setProdutos] = useState<Produto[]>([]);
+  // useEffect(() => {
+  //   fetchProdutosByVendedor(id).then(setProdutos);
+  // }, [id]);
+
+  // Dados fictícios para exibição temporária
   const produtos = Array.from({ length: 16 }, (_, i) => ({
     id: i + 1,
     nome: `Produto ${i + 1}`,
@@ -39,6 +54,7 @@ export default function PerfilVendedor({ route }: any) {
               <Feather name="user" size={28} color="#555" />
             </View>
             <View style={{ flex: 1 }}>
+              {/* TODO: Substituir nome, endereco e distancia pelos dados reais do vendedor vindos do Supabase */}
               <Text style={styles.lojaNome}>{nome}</Text>
               <Text style={styles.lojaEndereco}>{endereco}</Text>
               <View style={styles.distance}>
@@ -59,18 +75,27 @@ export default function PerfilVendedor({ route }: any) {
 
         {/* Produtos */}
         <Text style={styles.produtoTitulo}>Produtos</Text>
+        {/*
+          TODO: Substituir o array 'produtos' por dados vindos do Supabase.
+          Utilizar useEffect para buscar produtos do vendedor pelo id.
+          Exemplo de função futura: fetchProdutosByVendedor(id)
+        */}
         <FlatList
           data={produtos}
           keyExtractor={(item) => item.id.toString()}
           numColumns={4}
           scrollEnabled={false}
           renderItem={({ item }) => (
-            <View style={styles.produtoCard}>
+            <TouchableOpacity
+              style={styles.produtoCard}
+              // TODO: Navegar para infoProduto.tsx passando o id do produto real
+              onPress={() => router.push({ pathname: "/infoProduto", params: { id: item.id } })}
+            >
               <View style={styles.produtoIcon}>
                 <Feather name="box" size={24} color="#555" />
               </View>
               <Text style={styles.produtoNome}>{item.nome}</Text>
-            </View>
+            </TouchableOpacity>
           )}
         />
       </ScrollView>
