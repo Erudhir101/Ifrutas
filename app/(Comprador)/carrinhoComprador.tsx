@@ -1,153 +1,149 @@
-import { useRouter } from "expo-router"; // adicione esta linha
+import React, { useState } from "react";
 import {
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
+  SafeAreaView,
   View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  TextInput,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
-import { useEffect, useState } from "react";
-import SearchInput from "@/components/SearchInput";
-import { useAuth } from "@/hooks/AuthContext"; // Importe o hook de autenticação
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
-const initialItems = [
-  { id: "1", value: 23, name: "Apple", category: "Fruit" },
-  { id: "2", value: 20, name: "Banana", category: "Fruit" },
-  { id: "3", value: 13, name: "Carrot", category: "Vegetable" },
-  { id: "4", value: 33, name: "Dog", category: "Animal" },
-  { id: "5", value: 43, name: "Elephant", category: "Animal" },
-  { id: "6", value: 63, name: "Grape", category: "Fruit" },
-  { id: "7", value: 93, name: "Tomato", category: "Fruit/Vegetable" },
-  { id: "8", value: 33, name: "Zebra", category: "Animal" },
+const produtosExemplo = [
+  {
+    id: "1",
+    nome: "Melancia Quadrada",
+    preco: 46.12,
+    quantidade: 1,
+  },
+  {
+    id: "2",
+    nome: "Mertilo Dourado",
+    preco: 26.52,
+    quantidade: 3,
+  },
 ];
 
-export default function CarrinhoComprador() {
-  const router = useRouter(); // adicione esta linha
+export default function Carrinho() {
   const { colors } = useTheme();
-  const { user } = useAuth(); // Obtenha as informações do usuário
-  const [filteredItems, setFilteredItems] = useState(initialItems);
-  const [searchQuery, setSearchQuery] = useState("");
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
 
-  // useEffect to perform filtering whenever searchQuery changes
-  useEffect(() => {
-    if (searchQuery === "") {
-      // If search query is empty, show all items
-      setFilteredItems(initialItems);
-    } else {
-      // Filter items based on the search query (case-insensitive)
-      const lowerCaseQuery = searchQuery.toLowerCase();
-      const newFilteredItems = initialItems.filter(
-        (item) =>
-          item.name.toLowerCase().includes(lowerCaseQuery) ||
-          item.category.toLowerCase().includes(lowerCaseQuery),
-      );
-      setFilteredItems(newFilteredItems);
-    }
-  }, [searchQuery]); // Depend on searchQuery and initialItems
+  const [carrinho, setCarrinho] = useState(produtosExemplo);
+  const [search, setSearch] = useState("");
 
-  // Render function for each item in the FlatList
-  const renderItem = ({ item }) => (
-    <View
-      style={[
-        styles.listItem,
-        { backgroundColor: colors.nav, shadowColor: colors.text },
-      ]}
-    >
-      <View style={[{ gap: 8 }]}>
-        <Text style={[styles.itemName, { color: colors.text }]}>
-          {item.name}
-        </Text>
-        <Text style={[styles.itemCategory, { color: colors.secondary }]}>
-          {item.category}
-        </Text>
-        <Text style={[styles.itemValue, { color: colors.text }]}>
-          R$ {item.value}
-        </Text>
+  // Filtra os produtos do carrinho conforme o texto digitado
+  const carrinhoFiltrado = carrinho.filter((item) =>
+    item.nome.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const total = carrinhoFiltrado.reduce(
+    (sum, item) => sum + item.preco * item.quantidade,
+    0
+  );
+
+  const removerItem = (id: string) => {
+    const atualizado = carrinho.filter((item) => item.id !== id);
+    setCarrinho(atualizado);
+  };
+
+  const renderItem = ({ item }: { item: typeof produtosExemplo[0] }) => (
+    <View style={[styles.itemContainer, { backgroundColor: colors.card }]}>
+      <View style={styles.itemInfo}>
+        <View style={styles.itemIcon}>
+          <FontAwesome name="cube" size={24} color={colors.secondary} />
+        </View>
+        <View>
+          <Text style={[styles.itemName, { color: colors.text }]}>
+            {item.nome}
+          </Text>
+          <Text style={{ color: colors.secondary }}>
+            Quantidade: {item.quantidade}
+          </Text>
+          <Text style={{ color: colors.text }}>
+            R$ {item.preco.toFixed(2)}
+          </Text>
+        </View>
       </View>
       <TouchableOpacity
-        style={{
-          alignSelf: "flex-end",
-          backgroundColor: colors.secondary,
-          borderRadius: 16,
-        }}
+        style={styles.removeButton}
+        onPress={() => removerItem(item.id)}
       >
-        <Text
-          style={{
-            paddingVertical: 12,
-            paddingHorizontal: 16,
-            color: colors.nav,
-          }}
-        >
-          Remover
-        </Text>
+        <Text style={styles.removeButtonText}>Remover</Text>
       </TouchableOpacity>
     </View>
   );
-
-  const total = initialItems.reduce((acc, curr) => acc + curr.value, 0);
 
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <View style={styles.container}>
-        <Text style={[styles.title, { color: colors.primary }]}>
-          IFruts - carrinho
-        </Text>
-        <SearchInput search={searchQuery} setSearch={setSearchQuery} />
-        <View
-          style={[
-            styles.info,
-            { backgroundColor: colors.background, shadowColor: colors.text },
-          ]}
-        >
-          <Text
-            style={{ color: colors.text, fontSize: 20, fontWeight: "bold" }}
-          >
-            Total R$ {total}
-          </Text>
-          <Text style={{ color: colors.textSecondary }}>Endereço</Text>
-          <TouchableOpacity
-            onPress={() => {
-              const userId = user?.id || "GUEST"; // Use o ID do usuário ou "GUEST" como fallback
-              const orderId = `${userId}-${Date.now()}`; // Combina o ID do usuário com o timestamp
-              router.push({
-                pathname: "/acompanharPedido", // Atualize o caminho da rota para o novo nome correto
-                params: { id: orderId }, // Passa o ID como parâmetro
-              });
-            }}
-            style={{
-              backgroundColor: colors.primary,
-              borderRadius: 8,
-              paddingVertical: 18,
-              paddingHorizontal: 8,
-              width: "85%",
-            }}
-          >
-            <Text
-              style={{
-                textAlign: "center",
-                color: colors.nav,
-                fontWeight: "600",
-              }}
-            >
-              Comprar
-            </Text>
-          </TouchableOpacity>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={styles.logoContainer}>
+          <Text style={styles.logo}>LOGO</Text>
         </View>
-        <FlatList
-          data={filteredItems}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={() => (
-            <Text style={[styles.emptyListText, { color: colors.card }]}>
-              No items found.
-            </Text>
-          )}
+        <Feather name="bell" size={24} color={colors.text} />
+      </View>
+
+      {/* Barra de Pesquisa */}
+      <View style={[styles.searchBar, { backgroundColor: colors.card }]}>
+        <Feather name="search" size={20} color={colors.secondary} />
+        <TextInput
+          style={{ color: colors.secondary, marginLeft: 8, flex: 1 }}
+          placeholder="Buscar produto..."
+          placeholderTextColor={colors.secondary}
+          value={search}
+          onChangeText={setSearch}
         />
+      </View>
+
+      {/* Lista de Itens */}
+      <FlatList
+        data={carrinhoFiltrado}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        ListEmptyComponent={
+          <Text
+            style={{
+              color: colors.text,
+              textAlign: "center",
+              marginTop: 20,
+            }}
+          >
+            Seu carrinho está vazio.
+          </Text>
+        }
+      />
+
+      {/* Total e Endereço */}
+      <View style={styles.footer}>
+        <Text style={[styles.totalText, { color: colors.text }]}>
+          Total: R$ {total.toFixed(2)}
+        </Text>
+
+        <TouchableOpacity
+          style={[styles.addressContainer, { backgroundColor: colors.card }]}
+        >
+          <Feather name="map-pin" size={20} color={colors.primary} />
+          <View style={{ flex: 1, marginLeft: 8 }}>
+            <Text style={[styles.addressText, { color: colors.text }]}>
+              Enviar para CSB 10 Conj...
+            </Text>
+          </View>
+          <Text style={{ color: colors.primary, fontWeight: "bold" }}>
+            Alterar
+          </Text>
+        </TouchableOpacity>
+
+        {/* Botão Comprar */}
+        <TouchableOpacity style={styles.buyButton}>
+          <Text style={styles.buyButtonText}>Comprar</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -156,48 +152,107 @@ export default function CarrinhoComprador() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 10,
+    padding: 16,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  listItem: {
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    padding: 15,
-    marginVertical: 8,
-    marginHorizontal: 20,
-    borderRadius: 10,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  logoContainer: {
+    backgroundColor: "#E0E0E0",
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+  },
+  logo: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 16,
+  },
+  itemContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  itemInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  itemIcon: {
+    backgroundColor: "#E0E0E0",
+    padding: 8,
+    borderRadius: 8,
+    marginRight: 12,
   },
   itemName: {
-    fontSize: 20,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  removeButton: {
+    backgroundColor: "#E0E0E0",
+    borderRadius: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    alignSelf: "center",
+  },
+  removeButtonText: {
+    color: "#333",
     fontWeight: "600",
   },
-  itemCategory: {
-    fontSize: 14,
-    marginTop: 4,
+  footer: {
+    borderTopWidth: 1,
+    borderTopColor: "#E0E0E0",
+    paddingTop: 12,
   },
-  itemValue: {
-    fontSize: 16,
-    marginTop: 4,
+  totalText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 12,
   },
-  listContent: {
-    paddingBottom: 20,
-  },
-  emptyListText: {
-    textAlign: "center",
-    marginTop: 50,
-    fontSize: 16,
-  },
-  info: {
+  addressContainer: {
+    flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  addressText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  buyButton: {
+    backgroundColor: "#333",
+    borderRadius: 8,
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  buyButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  bottomMenu: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#E0E0E0",
+  },
+  menuText: {
+    fontSize: 12,
+    marginTop: 4,
+    textAlign: "center",
+    color: "#333",
   },
 });

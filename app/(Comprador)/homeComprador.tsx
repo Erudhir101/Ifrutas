@@ -18,6 +18,7 @@ import { useRouter } from "expo-router";
 
 const categories = ["Frutas", "Vegetais", "Orgânicos"];
 const pages = ["page1", "page2", "page3", "page4", "page5"];
+const photos = ["produto1", "produto2", "produto3", "produto4", "produto5"];
 const screenWidth = Dimensions.get("window").width; // Obtém a largura da tela
 const stores = [
   { title: "Mais Vendidos", desc: "Frutas Frescas", badge: "Entrega Grátis" },
@@ -86,6 +87,7 @@ export default function HomeComprador() {
               <TouchableOpacity
                 key={key}
                 style={[styles.categorie, { borderColor: colors.nav }]}
+                onPress={() => router.push("/listarProdutos")}
               >
                 <View style={styles.categorieImage} />
                 <Text style={{ color: colors.text }}>{item}</Text>
@@ -138,31 +140,38 @@ export default function HomeComprador() {
             />
           </MapView>
 
-          {/* Produtos Recomendados */}
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {/* Produtos Recomendados */}
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Produtos Recomendados
-          </Text>
-          <View style={styles.row}>
+            </Text>
+            <View style={styles.row}>
             {recommended.map((item, key) => (
-              <View
-                key={key}
-                style={[styles.card, { borderColor: colors.nav }]}
+              <TouchableOpacity
+              key={key}
+              style={[styles.card, { borderColor: colors.nav }]}
+              onPress={() =>
+                router.push({
+                pathname: "/infoProduto",
+                params: { id: products[key]?.id },
+                })
+              }
+              activeOpacity={0.8}
               >
-                <Image
-                  source={{
-                    uri: products[key]?.image || "https://picsum.photos/200",
-                  }}
-                  style={styles.productImage}
-                />
-                <Text style={styles.cardTag}>{item.tag}</Text>
-                <Text style={styles.cardDesc}>{item.title}</Text>
-                <View style={styles.cardFooter}>
-                  <Text style={styles.cardFooterText}>{item.subtitle}</Text>
-                  <Text style={styles.cardBadge}>{item.badge}</Text>
-                </View>
+              <Image
+                source={{
+                uri: products[key]?.image || "https://picsum.photos/200",
+                }}
+                style={styles.productImage}
+              />
+              <Text style={styles.cardTag}>{item.tag}</Text>
+              <Text style={styles.cardDesc}>{item.title}</Text>
+              <View style={styles.cardFooter}>
+                <Text style={styles.cardFooterText}>{item.subtitle}</Text>
+                <Text style={styles.cardBadge}>{item.badge}</Text>
               </View>
+              </TouchableOpacity>
             ))}
-          </View>
+            </View>
 
           {/* Botão */}
           <TouchableOpacity
@@ -196,31 +205,37 @@ export default function HomeComprador() {
             ))}
           </View>
 
-          {/* Últimas Atualizações */}
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {/* Últimas Atualizações */}
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Últimas Atualizações
-          </Text>
-          <View style={styles.row}>
+            </Text>
+            <View style={styles.row}>
             {updates.map((item, key) => (
-              <View
-                key={key}
-                style={[styles.card, { borderColor: colors.nav }]}
+              <TouchableOpacity
+              key={key}
+              style={[styles.card, { borderColor: colors.nav }]}
+              activeOpacity={0.8}
+              onPress={() => router.push("/perfilVendedor")}
               >
-                <Text style={styles.cardTitle}>{item.title}</Text>
-                <Text style={styles.cardDesc}>{item.desc}</Text>
-                <View style={styles.cardFooter}>
-                  <View style={{ flexDirection: "row", gap: 8 }}>
-                    {item.tags.map((tag, i) => (
-                      <Text key={i} style={styles.tag}>
-                        {tag}
-                      </Text>
-                    ))}
-                  </View>
-                  <Text style={styles.cardFooterText}>{item.author}</Text>
-                </View>
+              {/* Carousel menor dentro do card */}
+              <View style={{ height: 100, marginBottom: 8 }}>
+                <Carousel pages={photos} />
               </View>
+              <Text style={styles.cardTitle}>{item.title}</Text>
+              <Text style={styles.cardDesc}>{item.desc}</Text>
+              <View style={styles.cardFooter}>
+                <View style={{ flexDirection: "row", gap: 8 }}>
+                {item.tags.map((tag, i) => (
+                  <Text key={i} style={styles.tag}>
+                  {tag}
+                  </Text>
+                ))}
+                </View>
+                <Text style={styles.cardFooterText}>{item.author}</Text>
+              </View>
+              </TouchableOpacity>
             ))}
-        </View>
+            </View>
         </View>
       </ScrollView>
     </SafeAreaView>

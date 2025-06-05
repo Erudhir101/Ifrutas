@@ -1,5 +1,5 @@
 import { useTheme } from "@/hooks/useTheme";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import PagerView from "react-native-pager-view";
 
@@ -7,6 +7,19 @@ export default function Carousel({ pages }: { pages: string[] }) {
   const [page, setPage] = useState(0);
   const [showDots, setShowDots] = useState(true);
   const { colors } = useTheme();
+  const pagerRef = useRef<PagerView>(null);
+
+  // Autoplay: avança a cada 10 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPage((prev) => {
+        const nextPage = prev + 1 < pages.length ? prev + 1 : 0;
+        pagerRef.current?.setPage(nextPage);
+        return nextPage;
+      });
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [pages.length]);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowDots(false), 1000);
@@ -16,6 +29,7 @@ export default function Carousel({ pages }: { pages: string[] }) {
   return (
     <View style={styles.container}>
       <PagerView
+        ref={pagerRef}
         style={styles.pagerView}
         initialPage={0}
         onPageSelected={(e) => {
