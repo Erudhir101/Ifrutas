@@ -25,3 +25,14 @@ execute o projeto com **Expo**
 ```bash
 npx expo start
 ```
+
+## Exemplo de cadastros que estão funcionando
+- Comprador:
+  - email: teste@teste.com
+  - senha: Testes
+- Entregador: 
+  - email: eru@gmail.com
+  - senha: Qwerty
+- Vendedor: 
+  - email: testando@gmail.com
+  - senha: testando
