@@ -26,7 +26,7 @@ const coordinates: Coordinate[] = [
   },
 ];
 
-function calcularDistanciaHaversine(pos1: Coordinate, pos2: Coordinate) {
+export function calcularDistanciaHaversine(pos1: Coordinate, pos2: Coordinate) {
   const R = 6371; // Raio da Terra em quilômetros
 
   // Converter graus para radianos

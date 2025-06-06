@@ -1,6 +1,7 @@
 import {
   View,
   Text,
+  Image,
   TouchableOpacity,
   TextInput,
   StyleSheet,
@@ -9,28 +10,28 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useState } from "react";
-// import { useLocalSearchParams } from "expo-router"; // Descomente se for usar Expo Router futuramente
+import { useLocalSearchParams } from "expo-router";
+import { Product } from "@/lib/supabase";
 
-export default function Produto(/* { route, navigation }: any */) {
-  // Estrutura para receber o id do produto futuramente:
-  // const { id } = useLocalSearchParams(); // ou const { id } = route.params;
+export default function Produto() {
+  const [quantidade, setQuantidade] = useState(0);
 
-  // TODO: Buscar produto do Supabase usando o id recebido acima
+  const params = useLocalSearchParams();
+  const { item: itemString } = params;
 
-  // Dados fictícios para exibição temporária
-  const produto = {
-    id: 1,
-    nome: "Banana Nanica",
-    descricao: "Banana fresca, direto do produtor.",
-    preco: 4.99,
-  };
-
-  const [quantidade, setQuantidade] = useState("1");
+  let produto: Product | null = null;
+  try {
+    if (itemString) {
+      produto = JSON.parse(itemString);
+    }
+  } catch (e) {
+    console.error("Erro ao fazer o parse do item JSON:", e);
+  }
 
   const adicionarAoCarrinho = () => {
     Alert.alert(
       "Adicionado!",
-      `${quantidade}x ${produto.nome} foi adicionado ao carrinho.`
+      `${quantidade}x ${produto?.name} foi adicionado ao carrinho.`,
     );
     // Aqui futuramente você pode adicionar no contexto global ou AsyncStorage
   };
@@ -39,18 +40,25 @@ export default function Produto(/* { route, navigation }: any */) {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>{produto.nome}</Text>
+        <Text style={styles.title}>{produto?.name}</Text>
         <TouchableOpacity>
-          <Feather name="more-horizontal" size={24} color="#333" />
+          <Feather name="more-horizontal" size={24} color="#555" />
         </TouchableOpacity>
       </View>
 
       {/* Detalhes do Produto */}
       <View style={styles.content}>
-        <Text style={styles.subTitle}>{produto.descricao}</Text>
+        <Text style={styles.subTitle}>{produto?.description}</Text>
 
         <View style={styles.imageBox}>
-          <Feather name="box" size={64} color="#555" />
+          {produto?.image ? (
+            <Image
+              source={{ uri: produto.image }}
+              style={styles.previewImage}
+            />
+          ) : (
+            <Feather name="box" size={24} color="#555" />
+          )}
         </View>
 
         {/* Quantidade */}
@@ -59,19 +67,16 @@ export default function Produto(/* { route, navigation }: any */) {
           <TextInput
             style={styles.qtdInput}
             keyboardType="numeric"
-            value={quantidade}
-            onChangeText={(text) => setQuantidade(text)}
+            value={"" + produto?.amount}
+            onChangeText={(text) => setQuantidade(parseInt(text))}
           />
         </View>
 
         {/* Preço */}
-        <Text style={styles.preco}>R$ {produto.preco.toFixed(2)}</Text>
+        <Text style={styles.preco}>R$ {produto?.price?.toFixed(2)}</Text>
 
         {/* Botão */}
-        <TouchableOpacity
-          style={styles.botao}
-          onPress={adicionarAoCarrinho}
-        >
+        <TouchableOpacity style={styles.botao} onPress={adicionarAoCarrinho}>
           <Text style={styles.botaoTexto}>Adicionar ao Carrinho</Text>
         </TouchableOpacity>
       </View>
@@ -150,5 +155,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
     fontSize: 14,
+  },
+  previewImage: {
+    width: "100%",
+    height: 160,
+    borderRadius: 12,
+    objectFit: "fill",
   },
 });

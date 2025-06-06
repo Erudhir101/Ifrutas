@@ -8,7 +8,6 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
   Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -22,7 +21,11 @@ const photos = ["produto1", "produto2", "produto3", "produto4", "produto5"];
 const screenWidth = Dimensions.get("window").width; // Obtém a largura da tela
 const stores = [
   { title: "Mais Vendidos", desc: "Frutas Frescas", badge: "Entrega Grátis" },
-  { title: "Orgânicas", desc: "Vegetais saudáveis", badge: "10% Desconto Hoje" },
+  {
+    title: "Orgânicas",
+    desc: "Vegetais saudáveis",
+    badge: "10% Desconto Hoje",
+  },
 ];
 const recommended = [
   {
@@ -39,8 +42,16 @@ const recommended = [
   },
 ];
 const reviews = [
-  { name: "Alice  ⭐⭐⭐⭐⭐", review: "Belo serviço, o produto é excelente!", rating: 5 },
-  { name: "Bob    ⭐⭐⭐⭐⭐", review: "Melhores frutas e vegetais da região!", rating: 4 },
+  {
+    name: "Alice  ⭐⭐⭐⭐⭐",
+    review: "Belo serviço, o produto é excelente!",
+    rating: 5,
+  },
+  {
+    name: "Bob    ⭐⭐⭐⭐⭐",
+    review: "Melhores frutas e vegetais da região!",
+    rating: 4,
+  },
 ];
 const updates = [
   {
@@ -140,38 +151,38 @@ export default function HomeComprador() {
             />
           </MapView>
 
-            {/* Produtos Recomendados */}
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          {/* Produtos Recomendados */}
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Produtos Recomendados
-            </Text>
-            <View style={styles.row}>
+          </Text>
+          <View style={styles.row}>
             {recommended.map((item, key) => (
               <TouchableOpacity
-              key={key}
-              style={[styles.card, { borderColor: colors.nav }]}
-              onPress={() =>
-                router.push({
-                pathname: "/infoProduto",
-                params: { id: products[key]?.id },
-                })
-              }
-              activeOpacity={0.8}
+                key={key}
+                style={[styles.card, { borderColor: colors.nav }]}
+                onPress={() =>
+                  router.push({
+                    pathname: "/infoProduto",
+                    params: { id: products[key]?.id },
+                  })
+                }
+                activeOpacity={0.8}
               >
-              <Image
-                source={{
-                uri: products[key]?.image || "https://picsum.photos/200",
-                }}
-                style={styles.productImage}
-              />
-              <Text style={styles.cardTag}>{item.tag}</Text>
-              <Text style={styles.cardDesc}>{item.title}</Text>
-              <View style={styles.cardFooter}>
-                <Text style={styles.cardFooterText}>{item.subtitle}</Text>
-                <Text style={styles.cardBadge}>{item.badge}</Text>
-              </View>
+                <Image
+                  source={{
+                    uri: products[key]?.image || "https://picsum.photos/200",
+                  }}
+                  style={styles.productImage}
+                />
+                <Text style={styles.cardTag}>{item.tag}</Text>
+                <Text style={styles.cardDesc}>{item.title}</Text>
+                <View style={styles.cardFooter}>
+                  <Text style={styles.cardFooterText}>{item.subtitle}</Text>
+                  <Text style={styles.cardBadge}>{item.badge}</Text>
+                </View>
               </TouchableOpacity>
             ))}
-            </View>
+          </View>
 
           {/* Botão */}
           <TouchableOpacity
@@ -179,7 +190,6 @@ export default function HomeComprador() {
               styles.mainButton,
               { backgroundColor: colors.text, borderColor: colors.nav },
             ]}
-
             onPress={() => router.push("/listarLojas")} // Navega para a tela /listarLojas
           >
             <Text style={{ color: colors.background, fontWeight: "bold" }}>
@@ -205,37 +215,37 @@ export default function HomeComprador() {
             ))}
           </View>
 
-            {/* Últimas Atualizações */}
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          {/* Últimas Atualizações */}
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Últimas Atualizações
-            </Text>
-            <View style={styles.row}>
+          </Text>
+          <View style={styles.row}>
             {updates.map((item, key) => (
               <TouchableOpacity
-              key={key}
-              style={[styles.card, { borderColor: colors.nav }]}
-              activeOpacity={0.8}
-              onPress={() => router.push("/perfilVendedor")}
+                key={key}
+                style={[styles.card, { borderColor: colors.nav }]}
+                activeOpacity={0.8}
+                onPress={() => router.push("/perfilVendedor")}
               >
-              {/* Carousel menor dentro do card */}
-              <View style={{ height: 100, marginBottom: 8 }}>
-                <Carousel pages={photos} />
-              </View>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardDesc}>{item.desc}</Text>
-              <View style={styles.cardFooter}>
-                <View style={{ flexDirection: "row", gap: 8 }}>
-                {item.tags.map((tag, i) => (
-                  <Text key={i} style={styles.tag}>
-                  {tag}
-                  </Text>
-                ))}
+                {/* Carousel menor dentro do card */}
+                <View style={{ height: 100, marginBottom: 8 }}>
+                  <Carousel pages={photos} />
                 </View>
-                <Text style={styles.cardFooterText}>{item.author}</Text>
-              </View>
+                <Text style={styles.cardTitle}>{item.title}</Text>
+                <Text style={styles.cardDesc}>{item.desc}</Text>
+                <View style={styles.cardFooter}>
+                  <View style={{ flexDirection: "row", gap: 8 }}>
+                    {item.tags.map((tag, i) => (
+                      <Text key={i} style={styles.tag}>
+                        {tag}
+                      </Text>
+                    ))}
+                  </View>
+                  <Text style={styles.cardFooterText}>{item.author}</Text>
+                </View>
               </TouchableOpacity>
             ))}
-            </View>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -449,3 +459,4 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
+

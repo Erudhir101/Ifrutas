@@ -1,38 +1,36 @@
 import {
   View,
   Text,
+  Image,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
   FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons, Feather, Entypo } from "@expo/vector-icons";
+import { Feather, Entypo } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import { fetchProducts } from "@/lib/product";
+import { Product } from "@/lib/supabase";
 
-export default function PerfilVendedor(/* { route }: any */) {
-  // Obtém os parâmetros da URL (id, nome, endereco, distancia)
-  const { id, nome, endereco, distancia } = useLocalSearchParams();
+export default function PerfilVendedor() {
+  const [produtos, setProdutos] = useState<Product[]>([]);
+  const {
+    id,
+    nome,
+    endereco,
+    distancia,
+  }: { id: string; nome: string; endereco: string; distancia: string } =
+    useLocalSearchParams();
 
-  // TODO: Buscar dados do vendedor no Supabase usando o id recebido acima
-  // Exemplo futuro:
-  // const [vendedor, setVendedor] = useState<Vendedor | null>(null);
-  // useEffect(() => {
-  //   fetchVendedorById(id).then(setVendedor);
-  // }, [id]);
-
-  // TODO: Buscar produtos do vendedor no Supabase usando o id do vendedor
-  // Exemplo futuro:
-  // const [produtos, setProdutos] = useState<Produto[]>([]);
-  // useEffect(() => {
-  //   fetchProdutosByVendedor(id).then(setProdutos);
-  // }, [id]);
-
-  // Dados fictícios para exibição temporária
-  const produtos = Array.from({ length: 16 }, (_, i) => ({
-    id: i + 1,
-    nome: `Produto ${i + 1}`,
-  }));
+  async function loadProducts() {
+    const product = await fetchProducts(id);
+    setProdutos(product);
+  }
+  useEffect(() => {
+    loadProducts();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -89,12 +87,24 @@ export default function PerfilVendedor(/* { route }: any */) {
             <TouchableOpacity
               style={styles.produtoCard}
               // TODO: Navegar para infoProduto.tsx passando o id do produto real
-              onPress={() => router.push({ pathname: "/infoProduto", params: { id: item.id } })}
+              onPress={() =>
+                router.push({
+                  pathname: "/infoProduto",
+                  params: { item: JSON.stringify(item) },
+                })
+              }
             >
               <View style={styles.produtoIcon}>
-                <Feather name="box" size={24} color="#555" />
+                {item.image ? (
+                  <Image
+                    source={{ uri: item.image }}
+                    style={styles.previewImage}
+                  />
+                ) : (
+                  <Feather name="box" size={24} color="#555" />
+                )}
               </View>
-              <Text style={styles.produtoNome}>{item.nome}</Text>
+              <Text style={styles.produtoNome}>{item.name}</Text>
             </TouchableOpacity>
           )}
         />
@@ -210,5 +220,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#333",
     textAlign: "center",
+  },
+  previewImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    objectFit: "cover",
   },
 });

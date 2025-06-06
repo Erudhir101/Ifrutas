@@ -5,48 +5,20 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, Feather, Entypo } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useStore } from "@/hooks/LojaContext";
+import { useEffect } from "react";
 
 export default function ListaLojas() {
   const router = useRouter();
-  // TODO: Buscar lista de lojas do Supabase e armazenar no estado
-  // Exemplo futuro:
-  // const [lojas, setLojas] = useState<Loja[]>([]);
-  // useEffect(() => {
-  //   fetchLojas().then(setLojas);
-  // }, []);
+  const { stores, fetchStores } = useStore();
 
-  // Dados fictícios para exibição temporária
-  const lojas = [
-    {
-      id: 1,
-      nome: "Sacolão da Fartura",
-      endereco: "Shopping Itau, Centro de Itaquaquecetuba",
-      distancia: "7Km de Distância",
-    },
-    {
-      id: 2,
-      nome: "Maxfruit",
-      endereco: "Taguatinga Sul, Próximo a feira",
-      distancia: "9Km de Distância",
-    },
-    {
-      id: 3,
-      nome: "Fresh Hortifruti",
-      endereco: "Ceilândia centro, quadra 134, lote 7",
-      distancia: "15Km de Distância",
-    },
-    {
-      id: 4,
-      nome: "Sacolão Ananás",
-      endereco: "CSB 8, Lote 10",
-      distancia: "10Km de Distância",
-    },
-  ];
+  useEffect(() => {
+    fetchStores();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -70,27 +42,32 @@ export default function ListaLojas() {
         />
       </View>
 
-      {/* Lista de Lojas */}
-      {/* TODO: Substituir o array 'lojas' por dados vindos do Supabase */}
       <ScrollView showsVerticalScrollIndicator={false}>
-        {lojas.map((loja) => (
+        {stores.map((loja) => (
           <View key={loja.id} style={styles.card}>
             <View style={styles.cardLeft}>
               <View style={styles.iconBox}>
                 <Feather name="shopping-bag" size={28} color="#555" />
               </View>
               <View style={styles.cardText}>
-                <Text style={styles.cardTitle}>{loja.nome}</Text>
+                <Text style={styles.cardTitle}>{loja.name}</Text>
                 <Text style={styles.cardSub}>{loja.endereco}</Text>
                 <View style={styles.distance}>
                   <Entypo name="location-pin" size={16} color="#888" />
-                  <Text style={styles.distanceText}>{loja.distancia}</Text>
+                  <Text style={styles.distanceText}>
+                    {Math.floor(Math.random() * 50) + 1} Km
+                  </Text>
                 </View>
               </View>
             </View>
-            <TouchableOpacity 
-            style={styles.button}
-            onPress={() => router.push(`/perfilVendedor?id=${loja.id}&nome=${encodeURIComponent(loja.nome)}&endereco=${encodeURIComponent(loja.endereco)}&distancia=${encodeURIComponent(loja.distancia)}`)}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() =>
+                router.push(
+                  `/perfilVendedor?&id=${loja.id}&nome=${encodeURIComponent(loja.name)}&endereco=${encodeURIComponent(loja.endereco ?? "")}`,
+                )
+              }
+            >
               <Text style={styles.buttonText}>Abrir</Text>
             </TouchableOpacity>
           </View>

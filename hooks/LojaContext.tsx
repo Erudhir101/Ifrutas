@@ -34,21 +34,19 @@ export function useStore() {
 
   const filterStoresByName = (name: string): Store[] => {
     return stores.filter((store) =>
-      store.name?.toLowerCase().includes(name.toLowerCase())
+      store.name?.toLowerCase().includes(name.toLowerCase()),
     );
   };
 
   const createStore = async (store: Omit<Store, "id">) => {
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .insert({
-          user_type: "vendedor",
-          full_name: store.name,
-          avatar_url: store.avatar_url,
-          endereco: store.endereco,
-          telefone: store.telefone,
-        });
+      const { error } = await supabase.from("profiles").insert({
+        user_type: "vendedor",
+        full_name: store.name,
+        avatar_url: store.avatar_url,
+        endereco: store.endereco,
+        telefone: store.telefone,
+      });
 
       if (error) throw error;
 
@@ -80,10 +78,7 @@ export function useStore() {
 
   const deleteStore = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .delete()
-        .eq("id", id);
+      const { error } = await supabase.from("profiles").delete().eq("id", id);
 
       if (error) throw error;
 
@@ -107,3 +102,4 @@ export function useStore() {
     deleteStore,
   };
 }
+
