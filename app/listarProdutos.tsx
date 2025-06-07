@@ -23,8 +23,6 @@ export default function ListarProdutos() {
     fetchProductsByCategory(categoria);
   }, []);
 
-  console.log(products);
-
   return (
     <View style={styles.container}>
       <Text style={styles.produtoTitulo}>Produtos</Text>

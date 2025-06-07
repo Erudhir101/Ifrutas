@@ -15,8 +15,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker } from "react-native-maps";
 import Carousel from "@/components/Carousel";
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
-import { Category } from "@/lib/supabase";
+import { useEffect, useState } from "react";
+import { Category, Review } from "@/lib/supabase";
+import { fetchAllReviews, fetchReviews } from "@/lib/review";
 
 const categories: Category[] = ["Frutas", "Verduras", "Organicos"];
 const screenWidth = Dimensions.get("window").width; // Obtém a largura da tela
@@ -26,32 +27,6 @@ const stores = [
     title: "Orgânicas",
     desc: "Vegetais saudáveis",
     badge: "10% Desconto Hoje",
-  },
-];
-const recommended = [
-  {
-    tag: "Produto novo",
-    title: "Suco de Laranja pra relaxar",
-    subtitle: "Laranjas Gostosas",
-    badge: "Direto da fonte!",
-  },
-  {
-    tag: "Escolhas saudáveis",
-    title: "Maçãs verdes",
-    subtitle: "Maçãs apetitosas",
-    badge: "Pague 3 e Leve 2!",
-  },
-];
-const reviews = [
-  {
-    name: "Alice  ⭐⭐⭐⭐⭐",
-    review: "Belo serviço, o produto é excelente!",
-    rating: 5,
-  },
-  {
-    name: "Bob    ⭐⭐⭐⭐⭐",
-    review: "Melhores frutas e vegetais da região!",
-    rating: 4,
   },
 ];
 const updates = [
@@ -72,9 +47,16 @@ const updates = [
 ];
 
 export default function HomeComprador() {
+  let names: string[];
   const { user } = useAuth();
   const { colors } = useTheme();
   const { products, fetchProducts } = useProduct();
+  const [reviews, setReviews] = useState<
+    (Review & { author: { full_name: string } | null })[]
+  >([]);
+
+  const recommended = [...products].sort(() => 0.5 - Math.random()).slice(0, 2);
+
   const photos = products
     .map((product) => {
       return product.image ?? "";
@@ -88,8 +70,14 @@ export default function HomeComprador() {
     .slice(5, 7);
   const router = useRouter(); // Substitui o useNavigation
 
+  const loadReviews = async () => {
+    const fetched = await fetchAllReviews();
+    setReviews(fetched);
+  };
+
   useEffect(() => {
     fetchProducts();
+    loadReviews();
   }, []);
 
   return (
@@ -115,7 +103,7 @@ export default function HomeComprador() {
             {categories.map((item, key) => (
               <TouchableOpacity
                 key={key}
-                style={[styles.categorie, { borderColor: colors.nav }]}
+                style={[styles.categorie, { borderColor: colors.border }]}
                 onPress={() =>
                   router.push({
                     pathname: "/listarProdutos",
@@ -186,22 +174,28 @@ export default function HomeComprador() {
                 onPress={() =>
                   router.push({
                     pathname: "/infoProduto",
-                    params: { id: products[key]?.id },
+                    params: { item: JSON.stringify(item) },
                   })
                 }
                 activeOpacity={0.8}
               >
                 <Image
                   source={{
-                    uri: products[key]?.image || "https://picsum.photos/200",
+                    uri: item.image || "https://picsum.photos/200",
                   }}
                   style={styles.productImage}
                 />
-                <Text style={styles.cardTag}>{item.tag}</Text>
-                <Text style={styles.cardDesc}>{item.title}</Text>
+                <Text style={styles.cardTag}>
+                  {["Produto novo", "Escolhas saudáveis"][key]}
+                </Text>
+                <Text style={styles.cardDesc}>{item.description}</Text>
                 <View style={styles.cardFooter}>
-                  <Text style={styles.cardFooterText}>{item.subtitle}</Text>
-                  <Text style={styles.cardBadge}>{item.badge}</Text>
+                  <Text style={styles.cardFooterText}>
+                    {item.name + [" Gostosa", " Apetitosa"][key]}
+                  </Text>
+                  <Text style={styles.cardBadge}>
+                    {["Direto da fonte", "Paque 3 leve 2"][key]}
+                  </Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -221,7 +215,12 @@ export default function HomeComprador() {
           </TouchableOpacity>
 
           {/* Reviews */}
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: colors.text, borderColor: colors.border },
+            ]}
+          >
             Review dos Usuários
           </Text>
           <View style={styles.row}>
@@ -230,10 +229,26 @@ export default function HomeComprador() {
                 key={key}
                 style={[styles.reviewCard, { borderColor: colors.nav }]}
               >
-                <Text style={{ fontWeight: "bold", color: colors.text }}>
-                  {item.name}
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                    color: colors.text,
+                    alignItems: "center",
+                  }}
+                >
+                  {item.author?.full_name +
+                    "  " +
+                    "⭐⭐⭐⭐⭐".slice(0, item.stars)}
                 </Text>
-                <Text style={{ color: colors.text }}>{item.review}</Text>
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontWeight: "bold",
+                    fontStyle: "italic",
+                  }}
+                >
+                  {item.review}
+                </Text>
               </View>
             ))}
           </View>
@@ -334,7 +349,6 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#ccc",
     marginHorizontal: 5,
   },
   categoryIcon: {
@@ -362,7 +376,6 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#ccc",
     marginHorizontal: 5,
   },
   storeTitle: {
@@ -471,8 +484,8 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 2,
     borderRadius: 16,
-    padding: 12,
-    gap: 6,
+    padding: 15,
+    gap: 10,
   },
   tag: {
     backgroundColor: "#eee",

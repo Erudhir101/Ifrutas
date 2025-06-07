@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Product } from "@/lib/supabase";
 import { useTheme } from "@/hooks/useTheme";
@@ -39,7 +39,15 @@ export default function Produto() {
       `${quantidade}x ${produto?.name} foi adicionado ao carrinho.`,
     );
   };
+  const handleTextChange = (text: string) => {
+    const numericValue = text.replace(/[^0-9]/g, "");
+    const newQuantity = numericValue ? parseInt(numericValue, 10) : 1;
+    setQuantidade(newQuantity < 1 ? 1 : newQuantity);
+  };
 
+  useEffect(() => {
+    if (quantidade < 0 || quantidade > 99) setQuantidade(0);
+  });
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -122,24 +130,54 @@ export default function Produto() {
             >
               Selecione a Quantidade:
             </Text>
-            <TextInput
-              maxLength={4}
-              style={{
-                backgroundColor: "#eee",
-                alignSelf: "center",
-                width: 120,
-                height: 50,
-                borderRadius: 16,
-                paddingHorizontal: 15,
-                paddingVertical: 15,
-                textAlign: "center",
-              }}
-              placeholder="0"
-              placeholderTextColor={"#ADAEBC"}
-              // value={fazer}
-              onChangeText={(text) => console.log(text)}
-              keyboardType="number-pad"
-            />
+            <View style={styles.inputContainer}>
+              {/* Botão de Diminuir */}
+              <TouchableOpacity
+                disabled={quantidade <= 0}
+                onPress={() => {
+                  if (quantidade >= 0) setQuantidade(quantidade - 1);
+                  else setQuantidade(0);
+                }}
+                style={styles.button}
+              >
+                <Text
+                  style={[
+                    styles.buttonText,
+                    quantidade <= 0 && styles.buttonTextDisable,
+                  ]}
+                >
+                  -
+                </Text>
+              </TouchableOpacity>
+
+              {/* Input de Quantidade */}
+              <TextInput
+                style={styles.quantityInput}
+                value={String(quantidade)} // O valor do input deve ser uma string
+                onChangeText={handleTextChange}
+                keyboardType="numeric" // Mostra o teclado numérico para o usuário
+                textAlign="center"
+              />
+
+              {/* Botão de Aumentar */}
+              <TouchableOpacity
+                disabled={quantidade > 99}
+                onPress={() => {
+                  if (quantidade <= 99) setQuantidade(quantidade + 1);
+                  else setQuantidade(99);
+                }}
+                style={styles.button}
+              >
+                <Text
+                  style={[
+                    styles.buttonText,
+                    quantidade > 99 && styles.buttonTextDisable,
+                  ]}
+                >
+                  +
+                </Text>
+              </TouchableOpacity>
+            </View>
             <View style={{ gap: 16 }}>
               <TouchableOpacity
                 style={[styles.botao, { backgroundColor: colors.primary }]}
@@ -242,5 +280,37 @@ const styles = StyleSheet.create({
     height: 160,
     borderRadius: 12,
     objectFit: "fill",
+  },
+  inputContainer: {
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    width: 150, // Largura do container
+  },
+  button: {
+    width: 40,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  buttonText: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  buttonTextDisable: {
+    color: "#aaa",
+  },
+  quantityInput: {
+    flex: 1, // Ocupa o espaço restante
+    height: 40,
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#000",
+    paddingHorizontal: 5,
   },
 });

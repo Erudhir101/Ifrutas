@@ -26,7 +26,7 @@ async function uploadImage(file, bucketName, path) {
     }
     console.log("Imagem carregada com sucesso:", data);
     return data.path;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erro ao carregar imagem:", error.message);
     return null;
   }
@@ -88,11 +88,19 @@ export interface UserProfile {
 }
 
 export interface Store {
-  id: string; // ID do vendedor (UserProfile.id)
-  name: string; // Nome completo do vendedor (UserProfile.full_name)
-  avatar_url?: string; // Avatar do vendedor (UserProfile.avatar_url)
-  endereco?: string; // Endereço do vendedor (UserProfile.endereco)
-  telefone?: string; // Telefone do vendedor (UserProfile.telefone)
+  id: string;
+  name: string;
+  avatar_url?: string;
+  endereco?: string;
+  telefone?: string;
+}
+
+export interface Review {
+  id: string;
+  user_id: string;
+  prof_id: string;
+  review: string;
+  stars: number;
 }
 
 export interface Database {
@@ -123,7 +131,11 @@ export interface Database {
         Insert: Omit<Tracking, "id">;
         Update: Partial<Omit<Tracking, "id">>;
       };
-      // Adicione purchase_products se quiser tipar também
+      reviews: {
+        Row: Review;
+        Insert: Omit<Review, "id">;
+        Update: Partial<Omit<Review, "id">>;
+      };
     };
   };
 }
