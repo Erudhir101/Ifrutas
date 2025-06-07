@@ -14,6 +14,7 @@ import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { v4 as uuidv4 } from "uuid";
+import { useTracking } from "@/hooks/RastreioContext";
 
 function formatPhoneNumber(phone) {
   if (!phone) return "";
@@ -30,6 +31,7 @@ export default function ContaComprador() {
   const { user, signOut } = useAuth();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { getLastTrackingByUser } = useTracking();
 
   const handleSignOut = async () => {
     try {
@@ -97,13 +99,17 @@ export default function ContaComprador() {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.option}
-          onPress={() => {
-            const userId = user?.id || "GUEST"; // Use o ID do usuário ou "GUEST" como fallback
-            const trackingId = `${userId}-${Date.now()}`; // Combina o ID do usuário com o timestamp
-            router.push({
-              pathname: "/acompanharPedido",
-              params: { id: trackingId }, // Passa o ID como parâmetro
-            });
+          onPress={async () => {
+            if (!user?.id) return;
+            const tracking = await getLastTrackingByUser(user.id);
+            if (tracking && tracking.id) {
+              router.push({
+                pathname: "/(Comprador)/_screens/acompanharPedido",
+                params: { id: tracking.id },
+              });
+            } else {
+              Alert.alert("Atenção", "Nenhum pedido encontrado para este usuário.");
+            }
           }}
         >
           <Feather name="shopping-cart" size={20} color={colors.text} />

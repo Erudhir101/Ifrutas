@@ -10,7 +10,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, Feather, Entypo } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useStore } from "@/hooks/LojaContext";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import BottomTabs from "@/components/BottomTabs";
+
+export const unstable_settings = {
+  initialRouteName: "listarLojas",
+};
+export const unstable_routeName = "listarLojas";
 
 export default function ListaLojas() {
   const router = useRouter();
@@ -69,7 +75,7 @@ export default function ListaLojas() {
               style={styles.button}
               onPress={() =>
                 router.push(
-                  `/perfilVendedor?&id=${loja.id}&nome=${encodeURIComponent(loja.name)}&endereco=${encodeURIComponent(loja.endereco ?? "")}`,
+                  `/(Comprador)/_screens/perfilVendedor?id=${loja.id}&nome=${encodeURIComponent(loja.name)}&endereco=${encodeURIComponent(loja.endereco ?? "")}`,
                 )
               }
             >
@@ -78,6 +84,9 @@ export default function ListaLojas() {
           </View>
         ))}
       </ScrollView>
+
+      {/* Tabs no rodapé */}
+      <BottomTabs />
     </SafeAreaView>
   );
 }

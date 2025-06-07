@@ -106,7 +106,7 @@ export default function AcompanharPedido() {
                       ]}
                       onPress={() => {
                         if (currentStep >= trackStepIndex) {
-                          router.push("/trackingEntregador"); // Atualize o caminho da rota
+                          router.push("/(Comprador)/_screens/trackingEntregador"); // Atualize o caminho da rota
                         }
                       }}
                       disabled={currentStep < trackStepIndex}

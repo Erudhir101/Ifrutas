@@ -89,8 +89,8 @@ export default function PerfilVendedor() {
               // TODO: Navegar para infoProduto.tsx passando o id do produto real
               onPress={() =>
                 router.push({
-                  pathname: "/infoProduto",
-                  params: { item: JSON.stringify(item) },
+                  pathname: "/(Comprador)/_screens/infoProduto",
+                  params: { item: JSON.stringify({ ...item, seller_id: id }) },
                 })
               }
             >

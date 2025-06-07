@@ -119,7 +119,7 @@ export default function HomeComprador() {
 
           {/* Lojas */}
           <TouchableOpacity
-            onPress={() => router.push("/listarLojas")} // Navega para a tela /listarLojas
+            onPress={() => router.push("/(Comprador)/_screens/listarLojas")}
           >
             <Text style={[styles.sectionTitle, { color: colors.primary }]}>
               Lojas
@@ -207,7 +207,7 @@ export default function HomeComprador() {
               styles.mainButton,
               { backgroundColor: colors.text, borderColor: colors.nav },
             ]}
-            onPress={() => router.push("/listarLojas")} // Navega para a tela /listarLojas
+            onPress={() => router.push("/(Comprador)/_screens/listarLojas")}
           >
             <Text style={{ color: colors.background, fontWeight: "bold" }}>
               Todas as Lojas

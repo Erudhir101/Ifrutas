@@ -10,15 +10,17 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Product } from "@/lib/supabase";
-import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/hooks/AuthContext";
+import { usePurchases } from "@/hooks/purchaseContext";
 
 export default function Produto() {
-  const { colors } = useTheme();
-  const [quantidade, setQuantidade] = useState(0);
-  const [modal, setModal] = useState(false);
+  const router = useRouter();
+  const { user } = useAuth();
+  const { getOrCreateOpenPurchase, addItemToPurchase } = usePurchases(user?.id);
+  const [quantidade, setQuantidade] = useState(1); // valor inicial 1
 
   const params = useLocalSearchParams();
   const { item: itemString } = params;
@@ -32,17 +34,41 @@ export default function Produto() {
     console.error("Erro ao fazer o parse do item JSON:", e);
   }
 
-  const handlePurchase = () => {
-    //TODO: fazer o handle, recriar o purchase para fazer a compra
-    Alert.alert(
-      "Adicionado!",
-      `${quantidade}x ${produto?.name} foi adicionado ao carrinho.`,
-    );
-  };
-  const handleTextChange = (text: string) => {
-    const numericValue = text.replace(/[^0-9]/g, "");
-    const newQuantity = numericValue ? parseInt(numericValue, 10) : 1;
-    setQuantidade(newQuantity < 1 ? 1 : newQuantity);
+  const adicionarAoCarrinho = async () => {
+    console.log("Função adicionarAoCarrinho chamada");
+    if (!user?.id || !produto?.id || !produto?.seller_id) {
+      console.log("Dados ausentes:", { userId: user?.id, produtoId: produto?.id, sellerId: produto?.seller_id });
+      Alert.alert("Erro", "Dados do usuário ou produto ausentes.");
+      return;
+    }
+
+    try {
+      const purchase = await getOrCreateOpenPurchase(produto.seller_id);
+      console.log("Lista de compras adquirida/criada:", purchase?.id, purchase);
+
+      await addItemToPurchase(purchase.id, produto, quantidade);
+
+      const updatedPurchase = await getOrCreateOpenPurchase(produto.seller_id);
+      console.log("Após adicionar item, lista:", updatedPurchase?.id, updatedPurchase);
+
+      Alert.alert(
+        "Adicionado!",
+        `${quantidade}x ${produto?.name} foi adicionado ao carrinho.`,
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              router.push(
+                `/(Comprador)/_screens/perfilVendedor?id=${produto.seller_id}`
+              );
+            },
+          },
+        ]
+      );
+    } catch (e) {
+      console.log("Erro ao adicionar ao carrinho:", e);
+      Alert.alert("Erro", "Não foi possível adicionar ao carrinho.");
+    }
   };
 
   useEffect(() => {
@@ -52,6 +78,19 @@ export default function Produto() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => {
+            if (produto?.seller_id) {
+              router.push(
+                `/(Comprador)/_screens/perfilVendedor?id=${produto.seller_id}`
+              );
+            } else {
+              router.back();
+            }
+          }}
+        >
+          <Feather name="arrow-left" size={24} color="#555" />
+        </TouchableOpacity>
         <Text style={styles.title}>{produto?.name}</Text>
         <TouchableOpacity>
           <Feather name="more-horizontal" size={24} color="#555" />
@@ -74,26 +113,17 @@ export default function Produto() {
         </View>
 
         {/* Quantidade */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            paddingHorizontal: 15,
-            marginBottom: 30,
-          }}
-        >
-          <View style={styles.qtdContainer}>
-            <Text style={styles.qtdLabel}>Quantidade</Text>
-            <View style={styles.qtdInput}>
-              <Text style={{ textAlign: "center", fontSize: 20 }}>
-                {produto?.amount}
-              </Text>
-            </View>
-          </View>
-
-          {/* Preço */}
-          <Text style={styles.preco}>R$ {produto?.price?.toFixed(2)}</Text>
+        <View style={styles.qtdContainer}>
+          <Text style={styles.qtdLabel}>Quantidade</Text>
+          <TextInput
+            style={styles.qtdInput}
+            keyboardType="numeric"
+            value={quantidade.toString()} // usa o estado quantidade
+            onChangeText={(text) => {
+              const valor = parseInt(text);
+              setQuantidade(isNaN(valor) ? 1 : valor); // garante mínimo 1
+            }}
+          />
         </View>
 
         {/* Botão */}
