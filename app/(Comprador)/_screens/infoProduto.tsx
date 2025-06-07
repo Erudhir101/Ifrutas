@@ -26,7 +26,20 @@ export default function Produto() {
   const params = useLocalSearchParams();
   const { item: itemString } = params;
 
-  let produto: Product | null = null;
+  let produto: Product = {
+    id: "",
+    name: "",
+    description: "",
+    price: 0,
+    amount: 0,
+    image: "",
+    available: false,
+    seller: "",
+    created_at: "",
+    updated_at: "",
+    category: "Outros",
+    measure: "unidade",
+  };
   try {
     if (itemString) {
       produto = JSON.parse(itemString);
@@ -200,6 +213,11 @@ export default function Produto() {
 
               {/* Botão de Aumentar */}
               <TouchableOpacity
+                disabled={quantidade >= (produto.amount ?? 99)}
+                onPress={() => {
+                  if (quantidade <= 99) setQuantidade(quantidade + 1);
+                  else setQuantidade(99);
+                }}
                 disabled={quantidade >= 99}
                 onPress={() => setQuantidade(Math.min(99, quantidade + 1))}
                 style={styles.button}
@@ -207,6 +225,8 @@ export default function Produto() {
                 <Text
                   style={[
                     styles.buttonText,
+                    quantidade >= (produto.amount ?? 99) &&
+                      styles.buttonTextDisable,
                     quantidade >= 99 && styles.buttonTextDisable,
                   ]}
                 >
