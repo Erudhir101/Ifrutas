@@ -9,6 +9,7 @@ import { AuthProvider } from "../hooks/AuthContext";
 import { StatusBar } from "expo-status-bar";
 import { useTheme } from "@/hooks/useTheme";
 import { View } from "react-native";
+import { CartProvider } from "@/hooks/ComprasContext.js";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -46,7 +47,9 @@ function RootLayoutNav() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <RootLayoutContent />
+        <CartProvider>
+          <RootLayoutContent />
+        </CartProvider>
       </ThemeProvider>
     </AuthProvider>
   );
