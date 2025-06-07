@@ -21,9 +21,9 @@ import { useFocusEffect } from "expo-router";
 import { useTracking } from "@/hooks/RastreioContext";
 
 export default function Carrinho() {
-  const { user } = useAuth(); // <-- pegue o usuário logado
+  const { user } = useAuth();
   const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets(); // <-- já está no seu código
   const router = useRouter();
 
   const [search, setSearch] = useState(""); // <-- Adicione esta linha
@@ -134,13 +134,8 @@ export default function Carrinho() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <View style={styles.logoContainer}>
-          <Text style={styles.logo}>LOGO</Text>
-        </View>
-        <Feather name="bell" size={24} color={colors.text} />
-      </View>
+      {/* Área de safe no topo */}
+      <View style={{ height: insets.top }} />
 
       {/* Barra de Pesquisa */}
       <View style={[styles.searchBar, { backgroundColor: colors.card }]}>

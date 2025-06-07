@@ -21,7 +21,7 @@ export default function BottomTabs() {
     };
     fetchCount();
     // Opcional: adicione um intervalo para atualizar o contador periodicamente
-    const interval = setInterval(fetchCount, 5000);
+    const interval = setInterval(fetchCount, 2500);
     return () => clearInterval(interval);
   }, [getOpenPurchaseItemCount]);
 
