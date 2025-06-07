@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapView, { Marker } from 'react-native-maps'; // Importando o mapa
 import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from "expo-router";
@@ -20,6 +20,7 @@ export interface Tracking {
 
 export default function TrackingEntregador() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets(); // <-- adicionado
   const router = useRouter();
   const { user } = useAuth();
   const { getLastTrackingByUser } = useTracking();
@@ -53,12 +54,16 @@ export default function TrackingEntregador() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Área de safe no topo */}
+      <View style={{ height: insets.top }} />
+
       {/* Botão de voltar */}
       <TouchableOpacity
         style={{ position: "absolute", top: 16, left: 16, zIndex: 10 }}
         onPress={async () => {
           if (!user?.id) return;
           const tracking = await getLastTrackingByUser(user.id);
+          console.log(`Rastreio: ${tracking.id}`)
           if (tracking && tracking.id) {
             router.push({
               pathname: "/(Comprador)/_screens/acompanharPedido",

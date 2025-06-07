@@ -28,11 +28,8 @@ export default function ListaLojas() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.logoBox}>
-          <Text style={styles.logo}>LOGO</Text>
-        </View>
         <TouchableOpacity>
-          <Feather name="bell" size={24} color="#333" />
+
         </TouchableOpacity>
       </View>
 

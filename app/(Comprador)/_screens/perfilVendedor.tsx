@@ -13,16 +13,13 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { fetchProducts } from "@/lib/product";
 import { Product } from "@/lib/supabase";
+import { useStore } from "@/hooks/LojaContext";
 
 export default function PerfilVendedor() {
   const [produtos, setProdutos] = useState<Product[]>([]);
-  const {
-    id,
-    nome,
-    endereco,
-    distancia,
-  }: { id: string; nome: string; endereco: string; distancia: string } =
-    useLocalSearchParams();
+  const { id }: { id: string } = useLocalSearchParams();
+  const { stores } = useStore();
+  const vendedor = stores.find((store) => store.id === id);
 
   async function loadProducts() {
     const product = await fetchProducts(id);
@@ -30,17 +27,14 @@ export default function PerfilVendedor() {
   }
   useEffect(() => {
     loadProducts();
-  }, []);
+  }, [id]);
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.logoBox}>
-          <Text style={styles.logo}>LOGO</Text>
-        </View>
         <TouchableOpacity>
-          <Feather name="bell" size={24} color="#333" />
+          {/* Botão de voltar, se desejar */}
         </TouchableOpacity>
       </View>
 
@@ -52,12 +46,13 @@ export default function PerfilVendedor() {
               <Feather name="user" size={28} color="#555" />
             </View>
             <View style={{ flex: 1 }}>
-              {/* TODO: Substituir nome, endereco e distancia pelos dados reais do vendedor vindos do Supabase */}
-              <Text style={styles.lojaNome}>{nome}</Text>
-              <Text style={styles.lojaEndereco}>{endereco}</Text>
+              <Text style={styles.lojaNome}>{vendedor?.name}</Text>
+              <Text style={styles.lojaEndereco}>{vendedor?.endereco}</Text>
               <View style={styles.distance}>
                 <Entypo name="location-pin" size={16} color="#888" />
-                <Text style={styles.distanceText}>{distancia}</Text>
+                <Text style={styles.distanceText}>
+                  {/* Se quiser calcular distância, coloque aqui */}
+                </Text>
               </View>
             </View>
           </View>
@@ -73,11 +68,6 @@ export default function PerfilVendedor() {
 
         {/* Produtos */}
         <Text style={styles.produtoTitulo}>Produtos</Text>
-        {/*
-          TODO: Substituir o array 'produtos' por dados vindos do Supabase.
-          Utilizar useEffect para buscar produtos do vendedor pelo id.
-          Exemplo de função futura: fetchProdutosByVendedor(id)
-        */}
         <FlatList
           data={produtos}
           keyExtractor={(item) => item.id.toString()}
@@ -86,7 +76,6 @@ export default function PerfilVendedor() {
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.produtoCard}
-              // TODO: Navegar para infoProduto.tsx passando o id do produto real
               onPress={() =>
                 router.push({
                   pathname: "/(Comprador)/_screens/infoProduto",

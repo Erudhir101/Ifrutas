@@ -91,6 +91,7 @@ export default function Produto() {
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => {
+            console.log(produto)
             if (produto?.seller_id) {
               router.push(
                 `/(Comprador)/_screens/perfilVendedor?id=${produto.seller_id}`
