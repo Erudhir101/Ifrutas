@@ -11,47 +11,21 @@ import {
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-
-const produtosExemplo = [
-  {
-    id: "1",
-    nome: "Melancia Quadrada",
-    preco: 46.12,
-    quantidade: 1,
-  },
-  {
-    id: "2",
-    nome: "Mertilo Dourado",
-    preco: 26.52,
-    quantidade: 3,
-  },
-];
+import { CartItem, useCart } from "@/hooks/ComprasContext";
 
 export default function Carrinho() {
   const { colors } = useTheme();
+  const { items, cartTotal, removeItem } = useCart();
   const insets = useSafeAreaInsets();
-  const router = useRouter();
 
-  const [carrinho, setCarrinho] = useState(produtosExemplo);
   const [search, setSearch] = useState("");
 
   // Filtra os produtos do carrinho conforme o texto digitado
-  const carrinhoFiltrado = carrinho.filter((item) =>
-    item.nome.toLowerCase().includes(search.toLowerCase())
+  const carrinhoFiltrado = items.filter((item) =>
+    item.products?.name?.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const total = carrinhoFiltrado.reduce(
-    (sum, item) => sum + item.preco * item.quantidade,
-    0
-  );
-
-  const removerItem = (id: string) => {
-    const atualizado = carrinho.filter((item) => item.id !== id);
-    setCarrinho(atualizado);
-  };
-
-  const renderItem = ({ item }: { item: typeof produtosExemplo[0] }) => (
+  const renderItem = ({ item }: { item: CartItem }) => (
     <View style={[styles.itemContainer, { backgroundColor: colors.card }]}>
       <View style={styles.itemInfo}>
         <View style={styles.itemIcon}>
@@ -59,19 +33,19 @@ export default function Carrinho() {
         </View>
         <View>
           <Text style={[styles.itemName, { color: colors.text }]}>
-            {item.nome}
+            {item.products?.name}
           </Text>
           <Text style={{ color: colors.secondary }}>
-            Quantidade: {item.quantidade}
+            Quantidade: {item.quantity}
           </Text>
           <Text style={{ color: colors.text }}>
-            R$ {item.preco.toFixed(2)}
+            R$ {item.products?.price?.toFixed(2)}
           </Text>
         </View>
       </View>
       <TouchableOpacity
         style={styles.removeButton}
-        onPress={() => removerItem(item.id)}
+        onPress={() => removeItem(item.id)}
       >
         <Text style={styles.removeButtonText}>Remover</Text>
       </TouchableOpacity>
@@ -123,7 +97,7 @@ export default function Carrinho() {
       {/* Total e Endereço */}
       <View style={styles.footer}>
         <Text style={[styles.totalText, { color: colors.text }]}>
-          Total: R$ {total.toFixed(2)}
+          Total: R$ {cartTotal.toFixed(2)}
         </Text>
 
         <TouchableOpacity

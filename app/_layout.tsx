@@ -8,8 +8,7 @@ import { ThemeProvider } from "../components/ThemeContext.js";
 import { AuthProvider } from "../hooks/AuthContext";
 import { StatusBar } from "expo-status-bar";
 import { useTheme } from "@/hooks/useTheme";
-import { View } from "react-native";
-import { CartProvider } from "@/hooks/ComprasContext.js";
+import { CartProvider } from "../hooks/ComprasContext";
 
 export {
   // Catch any errors thrown by the Layout component.

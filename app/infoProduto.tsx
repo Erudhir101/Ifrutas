@@ -14,16 +14,31 @@ import { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Product } from "@/lib/supabase";
 import { useTheme } from "@/hooks/useTheme";
+import { useCart } from "@/hooks/ComprasContext";
 
 export default function Produto() {
   const { colors } = useTheme();
+  const { addItem } = useCart();
   const [quantidade, setQuantidade] = useState(0);
   const [modal, setModal] = useState(false);
 
   const params = useLocalSearchParams();
   const { item: itemString } = params;
 
-  let produto: Product | null = null;
+  let produto: Product = {
+    id: "",
+    name: "",
+    description: "",
+    price: 0,
+    amount: 0,
+    image: "",
+    available: false,
+    seller: "",
+    created_at: "",
+    updated_at: "",
+    category: "Outros",
+    measure: "unidade",
+  };
   try {
     if (itemString) {
       produto = JSON.parse(itemString);
@@ -33,10 +48,10 @@ export default function Produto() {
   }
 
   const handlePurchase = () => {
-    //TODO: fazer o handle, recriar o purchase para fazer a compra
+    addItem(produto, quantidade);
     Alert.alert(
       "Adicionado!",
-      `${quantidade}x ${produto?.name} foi adicionado ao carrinho.`,
+      `${quantidade}x ${produto.name} foi adicionado ao carrinho.`,
     );
   };
   const handleTextChange = (text: string) => {
@@ -161,7 +176,7 @@ export default function Produto() {
 
               {/* Botão de Aumentar */}
               <TouchableOpacity
-                disabled={quantidade > 99}
+                disabled={quantidade >= (produto.amount ?? 99)}
                 onPress={() => {
                   if (quantidade <= 99) setQuantidade(quantidade + 1);
                   else setQuantidade(99);
@@ -171,7 +186,8 @@ export default function Produto() {
                 <Text
                   style={[
                     styles.buttonText,
-                    quantidade > 99 && styles.buttonTextDisable,
+                    quantidade >= (produto.amount ?? 99) &&
+                      styles.buttonTextDisable,
                   ]}
                 >
                   +
