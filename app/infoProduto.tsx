@@ -6,15 +6,19 @@ import {
   TextInput,
   StyleSheet,
   Alert,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Product } from "@/lib/supabase";
+import { useTheme } from "@/hooks/useTheme";
 
 export default function Produto() {
+  const { colors } = useTheme();
   const [quantidade, setQuantidade] = useState(0);
+  const [modal, setModal] = useState(false);
 
   const params = useLocalSearchParams();
   const { item: itemString } = params;
@@ -28,12 +32,12 @@ export default function Produto() {
     console.error("Erro ao fazer o parse do item JSON:", e);
   }
 
-  const adicionarAoCarrinho = () => {
+  const handlePurchase = () => {
+    //TODO: fazer o handle, recriar o purchase para fazer a compra
     Alert.alert(
       "Adicionado!",
       `${quantidade}x ${produto?.name} foi adicionado ao carrinho.`,
     );
-    // Aqui futuramente você pode adicionar no contexto global ou AsyncStorage
   };
 
   return (
@@ -62,24 +66,101 @@ export default function Produto() {
         </View>
 
         {/* Quantidade */}
-        <View style={styles.qtdContainer}>
-          <Text style={styles.qtdLabel}>Quantidade</Text>
-          <TextInput
-            style={styles.qtdInput}
-            keyboardType="numeric"
-            value={"" + produto?.amount}
-            onChangeText={(text) => setQuantidade(parseInt(text))}
-          />
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingHorizontal: 15,
+            marginBottom: 30,
+          }}
+        >
+          <View style={styles.qtdContainer}>
+            <Text style={styles.qtdLabel}>Quantidade</Text>
+            <View style={styles.qtdInput}>
+              <Text style={{ textAlign: "center", fontSize: 20 }}>
+                {produto?.amount}
+              </Text>
+            </View>
+          </View>
+
+          {/* Preço */}
+          <Text style={styles.preco}>R$ {produto?.price?.toFixed(2)}</Text>
         </View>
 
-        {/* Preço */}
-        <Text style={styles.preco}>R$ {produto?.price?.toFixed(2)}</Text>
-
         {/* Botão */}
-        <TouchableOpacity style={styles.botao} onPress={adicionarAoCarrinho}>
+        <TouchableOpacity
+          style={styles.botao}
+          onPress={() => {
+            setModal(true);
+          }}
+        >
           <Text style={styles.botaoTexto}>Adicionar ao Carrinho</Text>
         </TouchableOpacity>
       </View>
+      <Modal animationType="fade" transparent={true} visible={modal}>
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+          }}
+        >
+          <View
+            style={{
+              width: "90%",
+              backgroundColor: "#fafafa",
+              borderRadius: 16,
+              paddingHorizontal: 15,
+              paddingVertical: 15,
+              gap: 40,
+            }}
+          >
+            <Text
+              style={{ fontSize: 25, fontWeight: "bold", textAlign: "center" }}
+            >
+              Selecione a Quantidade:
+            </Text>
+            <TextInput
+              maxLength={4}
+              style={{
+                backgroundColor: "#eee",
+                alignSelf: "center",
+                width: 120,
+                height: 50,
+                borderRadius: 16,
+                paddingHorizontal: 15,
+                paddingVertical: 15,
+                textAlign: "center",
+              }}
+              placeholder="0"
+              placeholderTextColor={"#ADAEBC"}
+              // value={fazer}
+              onChangeText={(text) => console.log(text)}
+              keyboardType="number-pad"
+            />
+            <View style={{ gap: 16 }}>
+              <TouchableOpacity
+                style={[styles.botao, { backgroundColor: colors.primary }]}
+                onPress={() => {
+                  handlePurchase();
+                }}
+              >
+                <Text style={styles.botaoTexto}>Adicionar ao Carrinho</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.botao}
+                onPress={() => {
+                  setModal(false);
+                }}
+              >
+                <Text style={styles.botaoTexto}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -97,7 +178,7 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   title: {
-    fontSize: 18,
+    fontSize: 32,
     fontWeight: "700",
     color: "#333",
   },
@@ -108,7 +189,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   subTitle: {
-    fontSize: 14,
+    fontSize: 18,
     color: "#555",
     marginBottom: 12,
   },
@@ -126,7 +207,7 @@ const styles = StyleSheet.create({
   },
   qtdLabel: {
     color: "#999",
-    fontSize: 12,
+    fontSize: 13,
     marginBottom: 4,
   },
   qtdInput: {
@@ -140,14 +221,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   preco: {
-    fontSize: 20,
+    fontSize: 30,
     fontWeight: "700",
     color: "#333",
     marginBottom: 16,
   },
   botao: {
     backgroundColor: "#555",
-    paddingVertical: 12,
+    paddingVertical: 15,
     borderRadius: 12,
     alignItems: "center",
   },

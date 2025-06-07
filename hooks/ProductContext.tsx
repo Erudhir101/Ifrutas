@@ -35,9 +35,9 @@ export function useProduct() {
   };
 
   // Carrega os produtos na inicialização
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  // useEffect(() => {
+  //   fetchProducts();
+  // }, []);
 
   return {
     products,

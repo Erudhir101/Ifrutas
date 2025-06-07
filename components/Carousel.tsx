@@ -1,6 +1,6 @@
 import { useTheme } from "@/hooks/useTheme";
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet } from "react-native";
 import PagerView from "react-native-pager-view";
 
 export default function Carousel({ pages }: { pages: string[] }) {
@@ -17,7 +17,7 @@ export default function Carousel({ pages }: { pages: string[] }) {
         pagerRef.current?.setPage(nextPage);
         return nextPage;
       });
-    }, 10000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [pages.length]);
 
@@ -39,7 +39,7 @@ export default function Carousel({ pages }: { pages: string[] }) {
       >
         {pages.map((content, index) => (
           <View key={index} style={styles.page}>
-            <Text>{content}</Text>
+            <Image style={styles.image} source={{ uri: content }} />
           </View>
         ))}
       </PagerView>
@@ -69,7 +69,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 200,
     borderWidth: 2,
-    borderRadius: 16,
   },
   pagerView: {
     flex: 1,
@@ -92,5 +91,10 @@ const styles = StyleSheet.create({
   },
   activeDot: {
     width: 20,
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+    borderColor: "#eee",
   },
 });

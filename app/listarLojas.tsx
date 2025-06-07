@@ -10,12 +10,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, Feather, Entypo } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useStore } from "@/hooks/LojaContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function ListaLojas() {
   const router = useRouter();
   const { stores, fetchStores } = useStore();
+  const [search, setSearch] = useState("");
 
+  const lojasFiltradas = stores.filter((item) =>
+    item.name.toLowerCase().includes(search.toLowerCase()),
+  );
   useEffect(() => {
     fetchStores();
   }, []);
@@ -39,11 +43,12 @@ export default function ListaLojas() {
           placeholder="Hortifruti"
           placeholderTextColor="#999"
           style={styles.input}
+          onChangeText={setSearch}
         />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {stores.map((loja) => (
+        {lojasFiltradas.map((loja) => (
           <View key={loja.id} style={styles.card}>
             <View style={styles.cardLeft}>
               <View style={styles.iconBox}>

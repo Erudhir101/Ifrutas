@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/AuthContext";
+
 import { useTheme } from "@/hooks/useTheme";
 import { useProduct } from "@/hooks/ProductContext";
 import {
@@ -14,10 +15,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker } from "react-native-maps";
 import Carousel from "@/components/Carousel";
 import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { Category } from "@/lib/supabase";
 
-const categories = ["Frutas", "Vegetais", "Orgânicos"];
-const pages = ["page1", "page2", "page3", "page4", "page5"];
-const photos = ["produto1", "produto2", "produto3", "produto4", "produto5"];
+const categories: Category[] = ["Frutas", "Verduras", "Organicos"];
 const screenWidth = Dimensions.get("window").width; // Obtém a largura da tela
 const stores = [
   { title: "Mais Vendidos", desc: "Frutas Frescas", badge: "Entrega Grátis" },
@@ -59,20 +60,37 @@ const updates = [
     desc: "Produtos frescos de alta qualidade",
     tags: ["Novo", "Oferta"],
     author: "FreshGreens",
+    start: 5,
   },
   {
     title: "Vegetais",
     desc: "Melhores fazendas!",
     tags: ["Local"],
     author: "Farm2Table",
+    start: 0,
   },
 ];
 
 export default function HomeComprador() {
   const { user } = useAuth();
   const { colors } = useTheme();
-  const { products, isLoading } = useProduct();
+  const { products, fetchProducts } = useProduct();
+  const photos = products
+    .map((product) => {
+      return product.image ?? "";
+    })
+    .slice(0, 5);
+
+  const pages = products
+    .map((product) => {
+      return product.image ?? "";
+    })
+    .slice(5, 7);
   const router = useRouter(); // Substitui o useNavigation
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   return (
     <SafeAreaView
@@ -90,7 +108,7 @@ export default function HomeComprador() {
           </Text>
 
           {/* Carousel */}
-          <Carousel pages={pages} />
+          <Carousel pages={photos} />
 
           {/* Categorias */}
           <View style={styles.categories}>
@@ -98,7 +116,12 @@ export default function HomeComprador() {
               <TouchableOpacity
                 key={key}
                 style={[styles.categorie, { borderColor: colors.nav }]}
-                onPress={() => router.push("/listarProdutos")}
+                onPress={() =>
+                  router.push({
+                    pathname: "/listarProdutos",
+                    params: { item: item },
+                  })
+                }
               >
                 <View style={styles.categorieImage} />
                 <Text style={{ color: colors.text }}>{item}</Text>
@@ -229,7 +252,7 @@ export default function HomeComprador() {
               >
                 {/* Carousel menor dentro do card */}
                 <View style={{ height: 100, marginBottom: 8 }}>
-                  <Carousel pages={photos} />
+                  <Carousel pages={pages} />
                 </View>
                 <Text style={styles.cardTitle}>{item.title}</Text>
                 <Text style={styles.cardDesc}>{item.desc}</Text>
@@ -459,4 +482,3 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
-
