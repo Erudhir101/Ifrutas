@@ -1,8 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker } from 'react-native-maps'; // Importando o mapa
 import { useTheme } from '@/hooks/useTheme';
+import { useRouter } from "expo-router";
+import { useAuth } from "@/hooks/AuthContext";
+import { useTracking } from "@/hooks/RastreioContext";
+import { Feather } from "@expo/vector-icons";
 
 export interface Tracking {
   id: string; // ID único do rastreio
@@ -16,6 +20,9 @@ export interface Tracking {
 
 export default function TrackingEntregador() {
   const { colors } = useTheme();
+  const router = useRouter();
+  const { user } = useAuth();
+  const { getLastTrackingByUser } = useTracking();
 
   // Exemplo de dados de rastreio
   const trackingData: Tracking = {
@@ -46,6 +53,23 @@ export default function TrackingEntregador() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Botão de voltar */}
+      <TouchableOpacity
+        style={{ position: "absolute", top: 16, left: 16, zIndex: 10 }}
+        onPress={async () => {
+          if (!user?.id) return;
+          const tracking = await getLastTrackingByUser(user.id);
+          if (tracking && tracking.id) {
+            router.push({
+              pathname: "/(Comprador)/_screens/acompanharPedido",
+              params: { id: tracking.id },
+            });
+          }
+        }}
+      >
+        <Feather name="arrow-left" size={28} color={colors.text} />
+      </TouchableOpacity>
+
       <Text style={[styles.title, { color: colors.text }]}>
         Rastreamento do Pedido
       </Text>

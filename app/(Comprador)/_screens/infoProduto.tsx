@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Product } from "@/lib/supabase";
 import { useAuth } from "@/hooks/AuthContext";
@@ -21,6 +21,7 @@ export default function Produto() {
   const { user } = useAuth();
   const { getOrCreateOpenPurchase, addItemToPurchase } = usePurchases(user?.id);
   const [quantidade, setQuantidade] = useState(1); // valor inicial 1
+  const [modal, setModal] = useState(false);
 
   const params = useLocalSearchParams();
   const { item: itemString } = params;
@@ -35,21 +36,15 @@ export default function Produto() {
   }
 
   const adicionarAoCarrinho = async () => {
-    console.log("Função adicionarAoCarrinho chamada");
     if (!user?.id || !produto?.id || !produto?.seller_id) {
-      console.log("Dados ausentes:", { userId: user?.id, produtoId: produto?.id, sellerId: produto?.seller_id });
       Alert.alert("Erro", "Dados do usuário ou produto ausentes.");
       return;
     }
 
     try {
       const purchase = await getOrCreateOpenPurchase(produto.seller_id);
-      console.log("Lista de compras adquirida/criada:", purchase?.id, purchase);
-
       await addItemToPurchase(purchase.id, produto, quantidade);
-
       const updatedPurchase = await getOrCreateOpenPurchase(produto.seller_id);
-      console.log("Após adicionar item, lista:", updatedPurchase?.id, updatedPurchase);
 
       Alert.alert(
         "Adicionado!",
@@ -58,6 +53,7 @@ export default function Produto() {
           {
             text: "OK",
             onPress: () => {
+              setModal(false);
               router.push(
                 `/(Comprador)/_screens/perfilVendedor?id=${produto.seller_id}`
               );
@@ -66,14 +62,29 @@ export default function Produto() {
         ]
       );
     } catch (e) {
-      console.log("Erro ao adicionar ao carrinho:", e);
       Alert.alert("Erro", "Não foi possível adicionar ao carrinho.");
     }
   };
 
+  // Função para o input do modal
+  const handleTextChange = (text: string) => {
+    const valor = parseInt(text);
+    if (isNaN(valor) || valor < 1) setQuantidade(1);
+    else if (valor > 99) setQuantidade(99);
+    else setQuantidade(valor);
+  };
+
+  // Função para o botão do modal
+  const handlePurchase = () => {
+    adicionarAoCarrinho();
+  };
+
+  // Validação de quantidade para evitar loops
   useEffect(() => {
-    if (quantidade < 0 || quantidade > 99) setQuantidade(0);
-  });
+    if (quantidade < 1) setQuantidade(1);
+    if (quantidade > 99) setQuantidade(99);
+  }, [quantidade]);
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -113,18 +124,7 @@ export default function Produto() {
         </View>
 
         {/* Quantidade */}
-        <View style={styles.qtdContainer}>
-          <Text style={styles.qtdLabel}>Quantidade</Text>
-          <TextInput
-            style={styles.qtdInput}
-            keyboardType="numeric"
-            value={quantidade.toString()} // usa o estado quantidade
-            onChangeText={(text) => {
-              const valor = parseInt(text);
-              setQuantidade(isNaN(valor) ? 1 : valor); // garante mínimo 1
-            }}
-          />
-        </View>
+
 
         {/* Botão */}
         <TouchableOpacity
@@ -163,17 +163,14 @@ export default function Produto() {
             <View style={styles.inputContainer}>
               {/* Botão de Diminuir */}
               <TouchableOpacity
-                disabled={quantidade <= 0}
-                onPress={() => {
-                  if (quantidade >= 0) setQuantidade(quantidade - 1);
-                  else setQuantidade(0);
-                }}
+                disabled={quantidade <= 1}
+                onPress={() => setQuantidade(Math.max(1, quantidade - 1))}
                 style={styles.button}
               >
                 <Text
                   style={[
                     styles.buttonText,
-                    quantidade <= 0 && styles.buttonTextDisable,
+                    quantidade <= 1 && styles.buttonTextDisable,
                   ]}
                 >
                   -
@@ -183,25 +180,22 @@ export default function Produto() {
               {/* Input de Quantidade */}
               <TextInput
                 style={styles.quantityInput}
-                value={String(quantidade)} // O valor do input deve ser uma string
+                value={String(quantidade)}
                 onChangeText={handleTextChange}
-                keyboardType="numeric" // Mostra o teclado numérico para o usuário
+                keyboardType="numeric"
                 textAlign="center"
               />
 
               {/* Botão de Aumentar */}
               <TouchableOpacity
-                disabled={quantidade > 99}
-                onPress={() => {
-                  if (quantidade <= 99) setQuantidade(quantidade + 1);
-                  else setQuantidade(99);
-                }}
+                disabled={quantidade >= 99}
+                onPress={() => setQuantidade(Math.min(99, quantidade + 1))}
                 style={styles.button}
               >
                 <Text
                   style={[
                     styles.buttonText,
-                    quantidade > 99 && styles.buttonTextDisable,
+                    quantidade >= 99 && styles.buttonTextDisable,
                   ]}
                 >
                   +
@@ -210,10 +204,8 @@ export default function Produto() {
             </View>
             <View style={{ gap: 16 }}>
               <TouchableOpacity
-                style={[styles.botao, { backgroundColor: colors.primary }]}
-                onPress={() => {
-                  handlePurchase();
-                }}
+                style={[styles.botao, { backgroundColor: "#2ecc40" }]}
+                onPress={handlePurchase}
               >
                 <Text style={styles.botaoTexto}>Adicionar ao Carrinho</Text>
               </TouchableOpacity>
