@@ -133,14 +133,6 @@ export default function Produto() {
             marginBottom: 30,
           }}
         >
-          <View style={styles.qtdContainer}>
-            <Text style={styles.qtdLabel}>Quantidade</Text>
-            <View style={styles.qtdInput}>
-              <Text style={{ textAlign: "center", fontSize: 20 }}>
-                {produto?.amount}
-              </Text>
-            </View>
-          </View>
 
           {/* Preço */}
           <Text style={styles.preco}>R$ {produto?.price?.toFixed(2)}</Text>
