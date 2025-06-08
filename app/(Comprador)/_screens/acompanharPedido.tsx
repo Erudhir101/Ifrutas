@@ -21,6 +21,7 @@ const steps = [
 
 export default function AcompanharPedido() {
   const { id } = useLocalSearchParams(); // Captura o ID da compra
+  console.log(`ID: ${id}`)
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const router = useRouter();

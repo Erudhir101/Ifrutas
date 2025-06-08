@@ -19,7 +19,6 @@ import { usePurchases } from "@/hooks/purchaseContext";
 import { useAuth } from "@/hooks/AuthContext"; // <-- adicione esta linha
 import { useFocusEffect } from "expo-router";
 import { useTracking } from "@/hooks/RastreioContext";
-import { CartItem, useCart } from "@/hooks/ComprasContext";
 
 export default function Carrinho() {
   const { user } = useAuth();
@@ -98,17 +97,6 @@ export default function Carrinho() {
   };
 
   const renderItem = ({ item }: { item: any }) => (
-  const { items, cartTotal, removeItem } = useCart();
-  const insets = useSafeAreaInsets();
-
-  const [search, setSearch] = useState("");
-
-  // Filtra os produtos do carrinho conforme o texto digitado
-  const carrinhoFiltrado = items.filter((item) =>
-    item.products?.name?.toLowerCase().includes(search.toLowerCase()),
-  );
-
-  const renderItem = ({ item }: { item: CartItem }) => (
     <View style={[styles.itemContainer, { backgroundColor: colors.card }]}>
       <View style={styles.itemInfo}>
         <View style={styles.itemIcon}>
@@ -123,19 +111,19 @@ export default function Carrinho() {
         </View>
         <View>
           <Text style={[styles.itemName, { color: colors.text }]}>
-            {item.products?.name}
+            {item.product?.name || "Produto"}
           </Text>
-          <Text style={{ color: colors.secondary }}>
-            Quantidade: {item.quantity}
+          <Text style={{ color: colors.secondary, fontSize: 14 }}>
+            {item.quantity} unidade{item.quantity > 1 ? "s" : ""}
           </Text>
-          <Text style={{ color: colors.text }}>
-            R$ {item.products?.price?.toFixed(2)}
+          <Text style={{ color: colors.text, fontWeight: "500", marginTop: 8 }}>
+            R$ {item.product?.price?.toFixed(2) ?? "0,00"}
           </Text>
         </View>
       </View>
       <TouchableOpacity
         style={styles.removeButton}
-        onPress={() => removeItem(item.id)}
+        onPress={() => removerItem(item.product_id)}
       >
         <Text style={styles.removeButtonText}>Remover</Text>
       </TouchableOpacity>
@@ -162,33 +150,9 @@ export default function Carrinho() {
       </View>
 
       {/* Lista de Itens */}
-<<<<<<< HEAD
       {isLoading ? (
         <Text style={{ color: colors.text, textAlign: "center", marginTop: 20 }}>
           Carregando...
-=======
-      <FlatList
-        data={carrinhoFiltrado}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        ListEmptyComponent={
-          <Text
-            style={{
-              color: colors.text,
-              textAlign: "center",
-              marginTop: 20,
-            }}
-          >
-            Seu carrinho está vazio.
-          </Text>
-        }
-      />
-
-      {/* Total e Endereço */}
-      <View style={styles.footer}>
-        <Text style={[styles.totalText, { color: colors.text }]}>
-          Total: R$ {cartTotal.toFixed(2)}
->>>>>>> 769b58a (adicionando o ComprasContext e toda a lógica do carrinho)
         </Text>
       ) : carrinho.length > 0 ? (
         <>

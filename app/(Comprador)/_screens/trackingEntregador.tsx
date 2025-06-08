@@ -63,7 +63,6 @@ export default function TrackingEntregador() {
         onPress={async () => {
           if (!user?.id) return;
           const tracking = await getLastTrackingByUser(user.id);
-          console.log(`Rastreio: ${tracking.id}`)
           if (tracking && tracking.id) {
             router.push({
               pathname: "/(Comprador)/_screens/acompanharPedido",
