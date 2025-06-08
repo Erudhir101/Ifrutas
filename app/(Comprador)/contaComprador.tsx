@@ -13,10 +13,9 @@ import DarkMode from "@/components/DarkMode";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { v4 as uuidv4 } from "uuid";
 import { useTracking } from "@/hooks/RastreioContext";
 
-function formatPhoneNumber(phone) {
+function formatPhoneNumber(phone: string) {
   if (!phone) return "";
   const cleaned = phone.toString().replace(/\D/g, "");
   const match = cleaned.match(/^(\d{2})(\d{5})(\d{4})$/);
@@ -46,23 +45,18 @@ export default function ContaComprador() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <View
-        style={[
-          styles.header,
-          { paddingTop: insets.top },
-        ]}
-      >
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <DarkMode />
       </View>
 
       <View style={styles.profileContainer}>
         <View style={styles.avatar}>
-          <FontAwesome name="user" size={48} color={colors.textSecondary} />
+          <FontAwesome name="user" size={48} color={colors.secondary} />
         </View>
         <Text style={[styles.userName, { color: colors.text }]}>
           {user?.full_name || "Nome Do Usuário"}
         </Text>
-        <Text style={[styles.userPhone, { color: colors.textSecondary }]}>
+        <Text style={[styles.userPhone, { color: colors.secondary }]}>
           {formatPhoneNumber(user?.telefone || "61998756863")}
         </Text>
       </View>
@@ -70,13 +64,13 @@ export default function ContaComprador() {
       <View style={styles.quickActions}>
         <TouchableOpacity style={styles.actionButton}>
           <Feather name="file-text" size={24} color={colors.text} />
-          <Text style={[styles.actionText, { color: colors.textSecondary }]}>
+          <Text style={[styles.actionText, { color: colors.secondary }]}>
             Últimos Pedidos
           </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton}>
           <Feather name="heart" size={24} color={colors.text} />
-          <Text style={[styles.actionText, { color: colors.textSecondary }]}>
+          <Text style={[styles.actionText, { color: colors.secondary }]}>
             Lojas Favoritas
           </Text>
         </TouchableOpacity>
@@ -88,14 +82,14 @@ export default function ContaComprador() {
           <Text style={[styles.optionText, { color: colors.text }]}>
             Meu Endereço
           </Text>
-          <Feather name="chevron-right" size={20} color={colors.textSecondary} />
+          <Feather name="chevron-right" size={20} color={colors.secondary} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.option}>
           <Feather name="dollar-sign" size={20} color={colors.text} />
           <Text style={[styles.optionText, { color: colors.text }]}>
             Carteira
           </Text>
-          <Feather name="chevron-right" size={20} color={colors.textSecondary} />
+          <Feather name="chevron-right" size={20} color={colors.secondary} />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.option}
@@ -108,7 +102,10 @@ export default function ContaComprador() {
                 params: { id: tracking.id },
               });
             } else {
-              Alert.alert("Atenção", "Nenhum pedido encontrado para este usuário.");
+              Alert.alert(
+                "Atenção",
+                "Nenhum pedido encontrado para este usuário.",
+              );
             }
           }}
         >
@@ -116,14 +113,14 @@ export default function ContaComprador() {
           <Text style={[styles.optionText, { color: colors.text }]}>
             Meus Pedidos
           </Text>
-          <Feather name="chevron-right" size={20} color={colors.textSecondary} />
+          <Feather name="chevron-right" size={20} color={colors.secondary} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.option}>
           <Feather name="star" size={20} color={colors.text} />
           <Text style={[styles.optionText, { color: colors.text }]}>
             Meus Favoritos
           </Text>
-          <Feather name="chevron-right" size={20} color={colors.textSecondary} />
+          <Feather name="chevron-right" size={20} color={colors.secondary} />
         </TouchableOpacity>
       </View>
 

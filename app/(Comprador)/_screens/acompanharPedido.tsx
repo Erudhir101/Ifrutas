@@ -46,7 +46,7 @@ export default function AcompanharPedido() {
           <Text style={[styles.subTitle, { color: colors.text }]}>
             Concluído!
           </Text>
-          <Text style={[styles.message, { color: colors.textSecondary }]}>
+          <Text style={[styles.message, { color: colors.secondary }]}>
             Recebemos seu pagamento, agora é só esperar a entrega.
           </Text>
         </View>
@@ -66,7 +66,7 @@ export default function AcompanharPedido() {
                       styles.circle,
                       done
                         ? { backgroundColor: colors.primary }
-                        : { borderColor: colors.textSecondary, borderWidth: 2 },
+                        : { borderColor: colors.secondary, borderWidth: 2 },
                     ]}
                   />
                   {idx < steps.length - 1 && (
@@ -75,7 +75,7 @@ export default function AcompanharPedido() {
                         styles.line,
                         done
                           ? { backgroundColor: colors.primary }
-                          : { backgroundColor: colors.textSecondary },
+                          : { backgroundColor: colors.secondary },
                       ]}
                     />
                   )}
@@ -86,7 +86,7 @@ export default function AcompanharPedido() {
                       styles.stepLabel,
                       done
                         ? { color: colors.text }
-                        : { color: colors.textSecondary },
+                        : { color: colors.secondary },
                     ]}
                   >
                     {label}
@@ -96,17 +96,21 @@ export default function AcompanharPedido() {
                       style={[
                         styles.trackButton,
                         {
-                          borderColor: currentStep >= trackStepIndex
-                            ? colors.primary
-                            : colors.textSecondary,
-                          backgroundColor: currentStep >= trackStepIndex
-                            ? "transparent"
-                            : "#f0f0f0",
+                          borderColor:
+                            currentStep >= trackStepIndex
+                              ? colors.primary
+                              : colors.secondary,
+                          backgroundColor:
+                            currentStep >= trackStepIndex
+                              ? "transparent"
+                              : "#f0f0f0",
                         },
                       ]}
                       onPress={() => {
                         if (currentStep >= trackStepIndex) {
-                          router.push("/(Comprador)/_screens/trackingEntregador"); // Atualize o caminho da rota
+                          router.push(
+                            "/(Comprador)/_screens/trackingEntregador",
+                          ); // Atualize o caminho da rota
                         }
                       }}
                       disabled={currentStep < trackStepIndex}
@@ -115,9 +119,10 @@ export default function AcompanharPedido() {
                         style={[
                           styles.trackButtonText,
                           {
-                            color: currentStep >= trackStepIndex
-                              ? colors.primary
-                              : colors.textSecondary,
+                            color:
+                              currentStep >= trackStepIndex
+                                ? colors.primary
+                                : colors.secondary,
                           },
                         ]}
                       >
@@ -142,7 +147,7 @@ export default function AcompanharPedido() {
           </Text>
         </TouchableOpacity>
 
-        <Text style={[styles.codeLabel, { color: colors.textSecondary }]}>
+        <Text style={[styles.codeLabel, { color: colors.secondary }]}>
           Código do pedido
         </Text>
         <Text style={[styles.code, { color: colors.primary }]}>
@@ -244,3 +249,4 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
 });
+

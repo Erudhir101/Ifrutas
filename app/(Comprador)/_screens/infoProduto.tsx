@@ -36,15 +36,15 @@ export default function Produto() {
   }
 
   const adicionarAoCarrinho = async () => {
-    if (!user?.id || !produto?.id || !produto?.seller_id) {
+    if (!user?.id || !produto?.id || !produto?.seller) {
       Alert.alert("Erro", "Dados do usuário ou produto ausentes.");
       return;
     }
 
     try {
-      const purchase = await getOrCreateOpenPurchase(produto.seller_id);
+      const purchase = await getOrCreateOpenPurchase(produto.seller);
       await addItemToPurchase(purchase.id, produto, quantidade);
-      const updatedPurchase = await getOrCreateOpenPurchase(produto.seller_id);
+      const updatedPurchase = await getOrCreateOpenPurchase(produto.seller);
 
       Alert.alert(
         "Adicionado!",
@@ -55,11 +55,11 @@ export default function Produto() {
             onPress: () => {
               setModal(false);
               router.push(
-                `/(Comprador)/_screens/perfilVendedor?id=${produto.seller_id}`
+                `/(Comprador)/_screens/perfilVendedor?id=${produto.seller}`,
               );
             },
           },
-        ]
+        ],
       );
     } catch (e) {
       Alert.alert("Erro", "Não foi possível adicionar ao carrinho.");
@@ -91,10 +91,9 @@ export default function Produto() {
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => {
-            console.log(produto)
-            if (produto?.seller_id) {
+            if (produto?.seller) {
               router.push(
-                `/(Comprador)/_screens/perfilVendedor?id=${produto.seller_id}`
+                `/(Comprador)/_screens/perfilVendedor?id=${produto.seller}`,
               );
             } else {
               router.back();
@@ -125,7 +124,27 @@ export default function Produto() {
         </View>
 
         {/* Quantidade */}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingHorizontal: 15,
+            marginBottom: 30,
+          }}
+        >
+          <View style={styles.qtdContainer}>
+            <Text style={styles.qtdLabel}>Quantidade</Text>
+            <View style={styles.qtdInput}>
+              <Text style={{ textAlign: "center", fontSize: 20 }}>
+                {produto?.amount}
+              </Text>
+            </View>
+          </View>
 
+          {/* Preço */}
+          <Text style={styles.preco}>R$ {produto?.price?.toFixed(2)}</Text>
+        </View>
 
         {/* Botão */}
         <TouchableOpacity

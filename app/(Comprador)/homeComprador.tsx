@@ -173,7 +173,7 @@ export default function HomeComprador() {
                 style={[styles.card, { borderColor: colors.nav }]}
                 onPress={() =>
                   router.push({
-                    pathname: "/infoProduto",
+                    pathname: "/(Comprador)/_screens/infoProduto",
                     params: { item: JSON.stringify(item) },
                   })
                 }
@@ -263,7 +263,9 @@ export default function HomeComprador() {
                 key={key}
                 style={[styles.card, { borderColor: colors.nav }]}
                 activeOpacity={0.8}
-                onPress={() => router.push("/perfilVendedor")}
+                onPress={() =>
+                  router.push("/(Comprador)/_screens/perfilVendedor")
+                }
               >
                 {/* Carousel menor dentro do card */}
                 <View style={{ height: 100, marginBottom: 8 }}>

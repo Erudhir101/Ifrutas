@@ -33,9 +33,7 @@ export default function PerfilVendedor() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity>
-          {/* Botão de voltar, se desejar */}
-        </TouchableOpacity>
+        <TouchableOpacity>{/* Botão de voltar, se desejar */}</TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -79,7 +77,7 @@ export default function PerfilVendedor() {
               onPress={() =>
                 router.push({
                   pathname: "/(Comprador)/_screens/infoProduto",
-                  params: { item: JSON.stringify({ ...item, seller_id: id }) },
+                  params: { item: JSON.stringify({ ...item, seller: id }) },
                 })
               }
             >

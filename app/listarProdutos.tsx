@@ -36,7 +36,7 @@ export default function ListarProdutos() {
             style={styles.produtoCard}
             onPress={() =>
               router.push({
-                pathname: "/infoProduto",
+                pathname: "/(Comprador)/_screens/infoProduto",
                 params: { item: JSON.stringify(item) },
               })
             }
