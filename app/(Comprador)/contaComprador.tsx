@@ -2,6 +2,7 @@ import React from "react";
 import {
   SafeAreaView,
   View,
+  Image,
   Text,
   StyleSheet,
   TouchableOpacity,
@@ -51,12 +52,16 @@ export default function ContaComprador() {
 
       <View style={styles.profileContainer}>
         <View style={styles.avatar}>
-          <FontAwesome name="user" size={48} color={colors.secondary} />
+          {user?.avatar_url ? (
+            <Image source={{ uri: user?.avatar_url }} style={styles.image} />
+          ) : (
+            <FontAwesome name="user" size={48} color={colors.text} />
+          )}
         </View>
         <Text style={[styles.userName, { color: colors.text }]}>
           {user?.full_name || "Nome Do Usuário"}
         </Text>
-        <Text style={[styles.userPhone, { color: colors.secondary }]}>
+        <Text style={[styles.userPhone, { color: colors.text }]}>
           {formatPhoneNumber(user?.telefone || "61998756863")}
         </Text>
       </View>
@@ -64,13 +69,13 @@ export default function ContaComprador() {
       <View style={styles.quickActions}>
         <TouchableOpacity style={styles.actionButton}>
           <Feather name="file-text" size={24} color={colors.text} />
-          <Text style={[styles.actionText, { color: colors.secondary }]}>
+          <Text style={[styles.actionText, { color: colors.text }]}>
             Últimos Pedidos
           </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton}>
           <Feather name="heart" size={24} color={colors.text} />
-          <Text style={[styles.actionText, { color: colors.secondary }]}>
+          <Text style={[styles.actionText, { color: colors.text }]}>
             Lojas Favoritas
           </Text>
         </TouchableOpacity>
@@ -78,25 +83,20 @@ export default function ContaComprador() {
 
       <View style={styles.optionsContainer}>
         <TouchableOpacity style={styles.option}>
-          <Feather name="map-pin" size={20} color={colors.text} />
-          <Text style={[styles.optionText, { color: colors.text }]}>
-            Meu Endereço
-          </Text>
-          <Feather name="chevron-right" size={20} color={colors.secondary} />
+          <Feather name="map-pin" size={20} color={"#000"} />
+          <Text style={[styles.optionText]}>Meu Endereço</Text>
+          <Feather name="chevron-right" size={20} color={"#000"} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.option}>
-          <Feather name="dollar-sign" size={20} color={colors.text} />
-          <Text style={[styles.optionText, { color: colors.text }]}>
-            Carteira
-          </Text>
-          <Feather name="chevron-right" size={20} color={colors.secondary} />
+          <Feather name="dollar-sign" size={20} color={"#000"} />
+          <Text style={[styles.optionText, { color: "#000" }]}>Carteira</Text>
+          <Feather name="chevron-right" size={20} color={"#000"} />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.option}
           onPress={async () => {
             if (!user?.id) return;
             const tracking = await getLastTrackingByUser(user.id);
-            console.log(tracking)
             if (tracking && tracking.id) {
               router.push({
                 pathname: "/(Comprador)/_screens/ultimosPedidos",
@@ -110,18 +110,18 @@ export default function ContaComprador() {
             }
           }}
         >
-          <Feather name="shopping-cart" size={20} color={colors.text} />
-          <Text style={[styles.optionText, { color: colors.text }]}>
+          <Feather name="shopping-cart" size={20} color={"#000"} />
+          <Text style={[styles.optionText, { color: "#000" }]}>
             Meus Pedidos
           </Text>
-          <Feather name="chevron-right" size={20} color={colors.secondary} />
+          <Feather name="chevron-right" size={20} color={"#000"} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.option}>
-          <Feather name="star" size={20} color={colors.text} />
-          <Text style={[styles.optionText, { color: colors.text }]}>
+          <Feather name="star" size={20} color={"#000"} />
+          <Text style={[styles.optionText, { color: "#000" }]}>
             Meus Favoritos
           </Text>
-          <Feather name="chevron-right" size={20} color={colors.secondary} />
+          <Feather name="chevron-right" size={20} color={"#000"} />
         </TouchableOpacity>
       </View>
 
@@ -205,6 +205,7 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
+    color: "000",
   },
   signOutButton: {
     backgroundColor: "#FF4D4D",
@@ -216,5 +217,13 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  image: {
+    width: 80,
+    height: 80,
+    borderRadius: 100,
+    borderWidth: 1,
+    objectFit: "cover",
+    aspectRatio: 1,
   },
 });

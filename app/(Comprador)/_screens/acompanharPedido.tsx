@@ -22,7 +22,6 @@ const steps = [
 
 export default function AcompanharPedido() {
   const { id } = useLocalSearchParams(); // Captura o ID da compra
-  console.log(`ID: ${id}`)
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const router = useRouter();
@@ -152,7 +151,9 @@ export default function AcompanharPedido() {
           style={[styles.button, { borderColor: colors.primary }]}
           onPress={handleReceberPedido}
         >
-          <Text style={[styles.buttonText, { color: colors.text }]}>Recebi meu pedido</Text>
+          <Text style={[styles.buttonText, { color: colors.text }]}>
+            Recebi meu pedido
+          </Text>
         </TouchableOpacity>
 
         <Text style={[styles.codeLabel, { color: colors.secondary }]}>
@@ -257,4 +258,3 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
 });
-
