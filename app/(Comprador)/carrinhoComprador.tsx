@@ -206,22 +206,11 @@ export default function Carrinho() {
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  logoContainer: {
-    backgroundColor: "#E0E0E0",
-    borderRadius: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 24,
   },
   logo: {
     fontSize: 16,

@@ -99,7 +99,7 @@ export default function ContaComprador() {
             console.log(tracking)
             if (tracking && tracking.id) {
               router.push({
-                pathname: "/(Comprador)/_screens/acompanharPedido",
+                pathname: "/(Comprador)/_screens/ultimosPedidos",
                 params: { id: tracking.id },
               });
             } else {

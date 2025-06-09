@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/hooks/useTheme";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { markPurchaseAsDelivered } from "@/lib/purchase";
 
 const steps = [
   "Realizando pedido",
@@ -27,6 +28,16 @@ export default function AcompanharPedido() {
   const router = useRouter();
   const currentStep = 3; // índice do passo atual (0-based)
   const trackStepIndex = steps.indexOf("O entregador está indo até você!");
+
+  const handleReceberPedido = async () => {
+    if (!id) return;
+    try {
+      await markPurchaseAsDelivered(String(id));
+      router.push("/(Comprador)/_screens/recebimentoPedido");
+    } catch (error) {
+      alert("Erro ao confirmar recebimento do pedido.");
+    }
+  };
 
   return (
     <SafeAreaView
@@ -139,13 +150,9 @@ export default function AcompanharPedido() {
 
         <TouchableOpacity
           style={[styles.button, { borderColor: colors.primary }]}
-          onPress={() => {
-            // ação ao confirmar recebimento
-          }}
+          onPress={handleReceberPedido}
         >
-          <Text style={[styles.buttonText, { color: colors.text }]}>
-            Recebi meu pedido
-          </Text>
+          <Text style={[styles.buttonText, { color: colors.text }]}>Recebi meu pedido</Text>
         </TouchableOpacity>
 
         <Text style={[styles.codeLabel, { color: colors.secondary }]}>

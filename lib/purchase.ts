@@ -50,3 +50,11 @@ export async function fetchPurchases(purchasesId: string): Promise<Purchase[]> {
   if (error) throw error;
   return purchases;
 }
+
+export async function markPurchaseAsDelivered(purchaseId: string) {
+  const { error } = await supabase
+    .from("purchases")
+    .update({ is_delivered: true })
+    .eq("id", purchaseId);
+  if (error) throw error;
+}
