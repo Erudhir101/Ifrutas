@@ -99,7 +99,7 @@ export default function HomeVendedor() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: "center" },
+  container: { flex: 1, alignItems: "center", gap: 30 },
   text: { textAlign: "center", fontWeight: "bold" },
   title: { fontSize: 25 },
   subtitle: {
@@ -125,7 +125,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 8,
     padding: 15,
-    marginBottom: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
